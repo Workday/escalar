@@ -18,8 +18,10 @@ tmp/
 *.iws
 .idea/
 
-# transient files
+# compilation output
 target/
 project/target/
 project/project/target/
 client/target/
+client/src/target/
+client/src/test/scala/com/workday/esclient/unit/target
