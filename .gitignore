@@ -1,0 +1,24 @@
+# generic
+tmp/
+*.log
+.cache
+
+# macosx
+*.DS_Store
+
+# java
+*.class
+*.jar
+*.war
+*.ear
+
+# idea
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# transient files
+target/
+project/target/
+project/project/target/
