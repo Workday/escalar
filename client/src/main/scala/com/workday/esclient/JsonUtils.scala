@@ -1,6 +1,6 @@
 package com.workday.esclient
 
-//TODO: remove this and replace with circe
+//TODO: replace with circe wrapper
 object JsonUtils {
   def equals(lhs: String, rhs: String): Boolean = {
     ???
@@ -11,10 +11,6 @@ object JsonUtils {
   }
 
   def fromJson[T](value: String): T = {
-    ???
-  }
-
-  def rawJson(value: String): String = {
     ???
   }
 }
