@@ -18,9 +18,10 @@ object Build extends Build {
         "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.3.2",
         "org.mockito" % "mockito-core" % "1.9.5",
         "org.scalatest" %% "scalatest" % "2.1.2" % "test"
-
       ),
-      externalResolvers += DefaultMavenRepository
+      externalResolvers += DefaultMavenRepository,
+      resolvers += Resolver.sonatypeRepo("releases"),
+      addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full)
     )
 
 }
