@@ -19,7 +19,7 @@ class Reroute(builder: RerouteBuilder) extends GenericResultAbstractAction(build
   protected override def buildURI: String = s"_cluster/reroute"
 
   override def getData(gson: Gson): String = {
-    JsonUtils.toJson(payload)
+    JsonUtils.toJson(JsonUtils.mapToJson(payload.asInstanceOf[Map[String, Any]]))
   }
 }
 
