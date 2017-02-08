@@ -29,6 +29,7 @@ object JsonUtils {
       val nv = v match {
         case int: Int => int.asJson
         case string: String => string.asJson
+        //TODO: potentially wrap this into wildcard case and use try-except to get Map[String,Any]
         case map: Map[String, Any] => {
           val vAsMap = map.asInstanceOf[Map[String,Any]]
           mapToJson(vAsMap).asJson
