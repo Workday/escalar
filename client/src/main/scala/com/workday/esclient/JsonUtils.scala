@@ -13,14 +13,15 @@ object JsonUtils {
     ???
   }
 
-  def toJson[T: Encoder](value: T): String = {
+  def toJson[T](value: T): String = {
     //val outerJson: String = value.asJson.noSpaces
     //Can't use cursor until we decide the downfield class name we'll be working with.
     //val cursor: HCursor = outerJson.hcursor
     //val innerJson: Json = cursor.downField()
     //getting compile errors here so we might need a custom encoder
     //TODO: make custom encoder if can't fix compile error
-    value.asJson.noSpaces
+    //value.asJson.noSpaces
+    ???
   }
 
   def mapToJson(rawValue: Map[String, Any]): Map[String, Json] = {
@@ -29,12 +30,14 @@ object JsonUtils {
       val nv = v match {
         case int: Int => int.asJson
         case string: String => string.asJson
-        //TODO: potentially wrap this into wildcard case and use try-except to get Map[String,Any]
-        case map: Map[String, Any] => {
-          val vAsMap = map.asInstanceOf[Map[String,Any]]
-          mapToJson(vAsMap).asJson
+        case _ => {
+          try {
+            val vAsMap = v.asInstanceOf[Map[String,Any]]
+            mapToJson(vAsMap).asJson
+          } catch {
+            case _: Throwable => Json.Null
+          }
         }
-        case _ => Json.Null
       }
       value = value + (k -> nv)
     }
