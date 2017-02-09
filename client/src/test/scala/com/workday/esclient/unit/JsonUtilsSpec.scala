@@ -1,13 +1,5 @@
 package com.workday.esclient.unit
 
-import java.util.Map.Entry
-
-import com.fasterxml.jackson.databind.JsonNode
-import com.google.gson.{Gson, JsonObject}
-import com.workday.esclient._
-import io.searchbox.client.{JestClient, JestResult}
-import io.circe._
-import io.circe.syntax._
 import com.fasterxml.jackson.databind.ObjectMapper
 
 class JsonUtilsSpec extends org.scalatest.FlatSpec with org.scalatest.Matchers with org.scalatest.BeforeAndAfterAll

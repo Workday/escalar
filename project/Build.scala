@@ -7,13 +7,11 @@ object Build extends Build {
   lazy val root = Project(id = "scala-elasticsearch-client-root", base = file("."))
     .settings(
       libraryDependencies ++= Seq(
-        "io.circe" %% "circe-core" % "0.7.0",
-        "io.circe" %% "circe-generic" % "0.7.0",
-        "io.circe" %% "circe-parser" % "0.7.0",
-        "io.circe" %% "circe-jackson28" % "0.7.0"
-      ),
-      resolvers += Resolver.sonatypeRepo("releases"),
-      addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full)
+        "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.5.3",
+        "com.fasterxml.jackson.core" % "jackson-annotations" % "2.5.3",
+        "com.fasterxml.jackson.core" % "jackson-databind" % "2.5.3",
+        "com.fasterxml.jackson.core" % "jackson-core" % "2.5.3"
+      )
     ) aggregate(client)
 
   lazy val client = Project(id = "client", base = file("client"))
@@ -21,16 +19,13 @@ object Build extends Build {
       name := "client",
       libraryDependencies ++= Seq(
         "io.searchbox" % "jest" % "0.1.7",
-        "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.3.2",
         "org.mockito" % "mockito-core" % "1.9.5",
         "org.scalatest" %% "scalatest" % "2.1.2" % "test",
-        "io.circe" %% "circe-core" % "0.7.0",
-        "io.circe" %% "circe-generic" % "0.7.0",
-        "io.circe" %% "circe-parser" % "0.7.0",
-        "io.circe" %% "circe-jackson28" % "0.7.0"
-      ),
-      externalResolvers += DefaultMavenRepository,
-      resolvers += Resolver.sonatypeRepo("releases"),
-      addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full)
+        "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.3.2",
+        "com.fasterxml.jackson.core" % "jackson-annotations" % "2.5.3",
+        "com.fasterxml.jackson.core" % "jackson-databind" % "2.5.3",
+        "com.fasterxml.jackson.core" % "jackson-core" % "2.5.3"
+      )//,
+      //externalResolvers += DefaultMavenRepository
     )
 }

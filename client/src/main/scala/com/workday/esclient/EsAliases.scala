@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.google.common.annotations.VisibleForTesting
 import com.google.gson.Gson
 import com.workday.esclient.actions.GetAliasByNameBuilder
-import io.circe.syntax._
 import io.searchbox.action.{AbstractMultiTypeActionBuilder, GenericResultAbstractAction}
 import io.searchbox.client.JestResult
 import io.searchbox.indices.aliases.GetAliases

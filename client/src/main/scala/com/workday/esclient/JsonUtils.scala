@@ -3,14 +3,9 @@ package com.workday.esclient
 import java.io.StringWriter
 import java.lang.reflect.{ParameterizedType, Type}
 
-import cats.syntax.either._
 import com.fasterxml.jackson.core.`type`.TypeReference
 import com.fasterxml.jackson.databind.{ObjectMapper, PropertyNamingStrategy}
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
-import io.circe._
-import io.circe.syntax._
-import io.circe.parser._
-import io.circe.generic.auto._
 
 object JsonUtils {
   var optObjectMapper: Option[ObjectMapper] = None
