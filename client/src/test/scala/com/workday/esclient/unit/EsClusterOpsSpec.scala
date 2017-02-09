@@ -215,7 +215,7 @@ class EsClusterOpsSpec extends EsClientSpec {
 
   it should "correctly implement toString" in {
     val testNode = NodeStat(host="host", name="node1", jvmNode, fsNode, attributesNode)
-    val expectedString = "NodeStat(host,node1,50,1024,2048,Some(2048),Some(512),Some(even))"
+    val expectedString = "NodeStat(host,node1,50,1024,2048,Some(2048),Some(512),{\"esx_group\":\"even\"})"
 
     testNode.toString shouldEqual expectedString
   }

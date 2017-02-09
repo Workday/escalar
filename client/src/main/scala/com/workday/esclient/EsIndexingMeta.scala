@@ -52,7 +52,7 @@ trait EsIndexingMeta extends JestUtils {
     val builder = new CreateIndex.Builder(index)
     // Settings have to be converted into a json string before being passed to the builder
     // See an example here: https://github.com/searchbox-io/Jest/blob/master/jest/src/test/java/io/searchbox/indices/CreateIndexIntegrationTest.java
-    builder.settings(JsonUtils.toJson(JsonUtils.toJson(settings.getOrElse(Map()))))
+    builder.settings(JsonUtils.toJson(settings.getOrElse(Map())))
     builder.build
   }
 }

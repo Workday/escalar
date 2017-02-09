@@ -17,7 +17,7 @@ class ClusterSettings(builder: ClusterSettingsBuilder) extends GenericResultAbst
   protected override def buildURI: String = s"_cluster/settings"
 
   override def getData(gson: Gson): String = {
-    JsonUtils.toJson(JsonUtils.toJson(payload))
+    JsonUtils.toJson(payload)
   }
 }
 
