@@ -25,23 +25,16 @@ object JsonUtils {
   }
 
   def mapToJson(rawValue: Map[String, Any]): Map[String, Json] = {
-    var value = Map[String, Json]()
-    for ((k,v) <- rawValue) {
-      val nv = v match {
-        case int: Int => int.asJson
-        case string: String => string.asJson
-        case _ => {
-          try {
-            val vAsMap = v.asInstanceOf[Map[String,Any]]
-            mapToJson(vAsMap).asJson
-          } catch {
-            case _: Throwable => Json.Null
-          }
-        }
-      }
-      value = value + (k -> nv)
+    rawValue.map { case (k, v) =>
+      (k, v match {
+        case nestedJson: Map[String, Any] => mapToJson(nestedJson).asJson
+        case primitive: Int     => primitive.asJson
+        case primitive: Double  => primitive.asJson
+        case primitive: String  => primitive.asJson
+        case primitive: Boolean => primitive.asJson
+        case _ => Json.Null
+      })
     }
-    return value
   }
 
   def fromJson[T](value: String): T = {
