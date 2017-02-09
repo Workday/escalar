@@ -95,7 +95,7 @@ class AliasBuilder(toAdd: Seq[AliasInfo], toRemove: Seq[AliasInfo]) extends Abst
 class AliasAction(builder: AliasBuilder) extends GenericResultAbstractAction(builder) {
   setURI(buildURI)
   override def getRestMethodName: String = "POST"
-  override def getData(gson: Gson): String = JsonUtils.toJson(JsonUtils.mapToJson(builder.actions))
+  override def getData(gson: Gson): String = JsonUtils.toJson(JsonUtils.toJson(builder.actions))
   protected override def buildURI: String = "_aliases"
 }
 

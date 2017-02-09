@@ -9,7 +9,8 @@ object Build extends Build {
       libraryDependencies ++= Seq(
         "io.circe" %% "circe-core" % "0.7.0",
         "io.circe" %% "circe-generic" % "0.7.0",
-        "io.circe" %% "circe-parser" % "0.7.0"
+        "io.circe" %% "circe-parser" % "0.7.0",
+        "io.circe" %% "circe-jackson28" % "0.7.0"
       ),
       resolvers += Resolver.sonatypeRepo("releases"),
       addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full)
@@ -25,7 +26,8 @@ object Build extends Build {
         "org.scalatest" %% "scalatest" % "2.1.2" % "test",
         "io.circe" %% "circe-core" % "0.7.0",
         "io.circe" %% "circe-generic" % "0.7.0",
-        "io.circe" %% "circe-parser" % "0.7.0"
+        "io.circe" %% "circe-parser" % "0.7.0",
+        "io.circe" %% "circe-jackson28" % "0.7.0"
       ),
       externalResolvers += DefaultMavenRepository,
       resolvers += Resolver.sonatypeRepo("releases"),

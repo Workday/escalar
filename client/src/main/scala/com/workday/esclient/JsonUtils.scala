@@ -1,29 +1,65 @@
 package com.workday.esclient
 
+import java.io.StringWriter
+import java.lang.reflect.{ParameterizedType, Type}
+
 import cats.syntax.either._
+import com.fasterxml.jackson.core.`type`.TypeReference
+import com.fasterxml.jackson.databind.{ObjectMapper, PropertyNamingStrategy}
+import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import io.circe._
 import io.circe.syntax._
 import io.circe.parser._
 import io.circe.generic.auto._
-import shapeless.Lazy
 
-//TODO: replace with circe wrapper
 object JsonUtils {
-  def equals(lhs: String, rhs: String): Boolean = {
-    ???
+  var optObjectMapper: Option[ObjectMapper] = None
+
+  // As of Jackson 2.4, we do not need a custom naming strategy - Jackson skips renaming on explicitly annotated fields
+  private lazy val defaultObjectMapper = new ObjectMapper().registerModule(new DefaultScalaModule())
+    .setPropertyNamingStrategy(PropertyNamingStrategy.CAMEL_CASE_TO_LOWER_CASE_WITH_UNDERSCORES)
+
+  def equals(lhs: String, rhs: String)(implicit objectMapper: ObjectMapper = optObjectMapper.getOrElse(defaultObjectMapper)): Boolean = {
+    objectMapper.readTree(lhs) equals objectMapper.readTree(rhs)
   }
 
-  def toJson[T](value: T): String = {
-    //val outerJson: String = value.asJson.noSpaces
-    //Can't use cursor until we decide the downfield class name we'll be working with.
-    //val cursor: HCursor = outerJson.hcursor
-    //val innerJson: Json = cursor.downField()
-    //getting compile errors here so we might need a custom encoder
-    //TODO: make custom encoder if can't fix compile error
-    //value.asJson.noSpaces
-    ???
+  def toJson[T](value: T)(implicit objectMapper: ObjectMapper = optObjectMapper.getOrElse(defaultObjectMapper)): String = {
+    val writer = new StringWriter
+    objectMapper.writeValue(writer, value)
+    writer.toString
   }
 
+  def fromJson[T](value: String)(implicit objectMapper: ObjectMapper = optObjectMapper.getOrElse(defaultObjectMapper), m: Manifest[T]): T = {
+    objectMapper.readValue(value, typeReference[T])
+  }
+
+  def rawJson(value: String)(implicit objectMapper: ObjectMapper = optObjectMapper.getOrElse(defaultObjectMapper)): String = {
+    value
+  }
+
+  private[this] def typeReference[T: Manifest] = new TypeReference[T] {
+    override def getType: Type = typeFromManifest(manifest[T])
+  }
+
+  private[this] def typeFromManifest(m: Manifest[_]): Type = {
+    if (m.typeArguments.isEmpty) {
+      m.runtimeClass
+    } else new ParameterizedType {
+      def getRawType: Type = m.runtimeClass
+
+      def getActualTypeArguments: Array[Type] = m.typeArguments.map(typeFromManifest).toArray
+
+      // $COVERAGE-OFF$
+      //  scalastyle:off
+      def getOwnerType: Type = null
+
+      //  scalastyle:on
+      // $COVERAGE-ON$
+    }
+  }
+
+  //TODO: replace jackson wrapper with circe wrapper.
+  /*
   def mapToJson(rawValue: Map[String, Any]): Map[String, Json] = {
     var value = Map[String, Json]()
     for ((k,v) <- rawValue) {
@@ -43,15 +79,5 @@ object JsonUtils {
     }
     return value
   }
-
-  def fromJson[T](value: String): T = {
-    //val rawJson = parse(value).getOrElse(Json.Null)
-    //TODO: make case classes
-    //rawJson.as[T]
-    ???
-  }
+  */
 }
-
-abstract class Message() {}
-case class StringMessage(x: String) {}
-case class IntMessage(x: Int) {}
