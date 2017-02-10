@@ -3,6 +3,9 @@ package com.workday.esclient
 import io.searchbox.client.config.HttpClientConfig
 import io.searchbox.client.{JestClient, JestClientFactory}
 
+/**
+  * Factory for [[com.workday.esclient.EsClient]] instances
+  */
 object EsClient {
   /*
    * You thought Scala vals were already final?  Think again.
@@ -26,6 +29,10 @@ object EsClient {
 
   val edgeNgramsAnalyzer = "edge_ngrams_analyzer"
 
+  /** Factory method that returns a Jest Client
+    * @param url url to add to client server list
+    * @param maxConns maximum number of connections to support
+    */
   def createJestClient(url: String, maxConns: Int = JEST_MAX_CONNS): JestClient = {
     val factory = new JestClientFactory
     factory.setHttpClientConfig(new HttpClientConfig.Builder(url)
@@ -37,6 +44,11 @@ object EsClient {
     factory.getObject
   }
 
+  /**
+    * Returns an EsClient
+    * @param url url for Jest client
+    * @param maxConns maxConns for Jest client configuration
+    */
   def createEsClient(url: String, maxConns: Int = JEST_MAX_CONNS): EsClient = {
     new EsClient(createJestClient(url, maxConns))
   }

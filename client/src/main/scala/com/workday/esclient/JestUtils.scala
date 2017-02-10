@@ -6,7 +6,7 @@ import com.google.common.annotations.VisibleForTesting
 import io.searchbox.client.{JestClient, JestResult}
 
 /**
-  * This trait enables access to a single JestClient across many EsClient APIs (modularized into traits).
+  * Enables access to a single JestClient across many EsClient APIs (modularized into traits).
   * The jest def here is overridden in EsClient.scala with the val jest.
   *
   * It also includes other helper functions for parsing responses from the Jest client.
@@ -14,6 +14,13 @@ import io.searchbox.client.{JestClient, JestResult}
 trait JestUtils {
   def jest: JestClient  // overridden in EsClient.scala with a val
 
+  /**
+    * Returns [[com.workday.esclient.EsResult]][T] from JSON Jest response.
+    * @param jestResult Jest response to be handled
+    * @param allowError Boolean value whether to parse error responses
+    * @tparam T implicit manifest
+    * @return EsResult[T]
+    */
   @VisibleForTesting
   protected[esclient] def toEsResult[T : Manifest](jestResult: JestResult, allowError: Boolean = false): EsResult[T] = {
     handleJestResult(jestResult, allowError) { successfulJestResult =>
@@ -22,8 +29,10 @@ trait JestUtils {
   }
 
   /**
+    * Returns successful EsResult[T] or error response on JSON parsing/mapping failure.
     * @param allowError - multiGet returns a GetResponse with an error field instead of a source, so we should report that normally
     * @tparam J we need J here to allow things like jest's CountResult
+    * @return EsResult[T] either EsResponse[T] or an error message type
     */
   protected[this] def handleJestResult[J <: JestResult, T](jestResult: J, allowError: Boolean = false)(responseHandler: J => T): EsResult[T] = {
     // Return a EsInvalidResponse if both the JSON Object and String are null.
@@ -54,11 +63,19 @@ trait JestUtils {
   }
 }
 
+/**
+  * Case class for acknowledgment EsResults.
+  * @param acknowledged boolean value for acknowledgment
+  */
 case class Acknowledgement(
   acknowledged: Boolean
 )
 
 // We'll likely want to consider adding the original jestResult as a parameter
+/**
+  * Trait for wrapping Elasticsearch response types.
+  * @tparam T response type
+  */
 sealed trait EsResult[+T] {
   def get: T
 
@@ -69,12 +86,28 @@ sealed trait EsResult[+T] {
   }
 }
 
+/**
+  * Case class for an Elasticsearch invalid response.
+  * @param msg ES response message
+  */
 case class EsInvalidResponse(msg: String) extends EsResult[Nothing] {
   def get: Nothing = throw new NoSuchElementException(msg)
 }
+
+/**
+  * Case class for an Elasticsearch error response.
+  * @param error error message
+  * @param status status code
+  */
 case class EsError(error: String, status: Int) extends EsResult[Nothing] {
   def get: Nothing = throw new NoSuchElementException(error + ", status " + status)
 }
+
+/**
+  * Case class for an Elasticsearch valid response.
+  * @param value value instance to wrap in case class
+  * @tparam T response type
+  */
 case class EsResponse[T](value: T) extends EsResult[T] {
   def get: T = value
 }

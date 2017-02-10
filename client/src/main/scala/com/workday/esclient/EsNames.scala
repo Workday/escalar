@@ -1,5 +1,8 @@
 package com.workday.esclient
 
+/**
+  * Utility object for [[com.workday.esclient]] traits.
+  */
 object EsNames {
   val FilterPath = "filter_path"
   // Values for ES to return in its result set; we dont include hits.hits because it includes all values in the hits array

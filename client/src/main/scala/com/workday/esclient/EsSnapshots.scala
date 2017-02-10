@@ -6,12 +6,17 @@ import com.workday.esclient.actions._
 import scala.collection.JavaConverters.asScalaIteratorConverter
 
 /**
-  * Elasticsearch Snapshot APIs
+  * Trait wrapping Elasticsearch Snapshot APIs.
   */
 trait EsSnapshots extends JestUtils {
 
   /**
-    * Take a snapshot of a set of indices
+    * Returns a snapshot of a set of indices.
+    * @param repositoryName String name of target repository
+    * @param snapshotName String name of snapshot
+    * @param indices Sequence of String indices
+    * @param waitForCompletion Boolean whether to wait for snapshot response; Defaults to false
+    * @return EsResult of snapshot or accepted response
     */
   def snapshotCreate(repositoryName: String, snapshotName: String, indices: Seq[String], waitForCompletion: Boolean = false): EsResult[Any] = {
     val putAction = new SnapshotCreateBuilder(repositoryName, snapshotName, indices, waitForCompletion).build
@@ -23,7 +28,10 @@ trait EsSnapshots extends JestUtils {
   }
 
   /**
-    * Delete a snapshot
+    * Deletes a snapshot from given repository and returns acknowledgment.
+    * @param repositoryName String name of target repository
+    * @param snapshotName String name of snapshot
+    * @return EsResult containing an Elasticsearch acknowledgment
     */
   def snapshotDelete(repositoryName: String, snapshotName: String): EsResult[Acknowledgement] = {
     val deleteAction = new SnapshotDeleteBuilder(repositoryName, snapshotName).build
@@ -32,7 +40,12 @@ trait EsSnapshots extends JestUtils {
   }
 
   /**
-    * Restore from a snapshot. The repository must be closed or this will fail
+    * Restores from a snapshot and returns an accepted response from Elasticsearch.
+    * Repository must be closed or this will fail.
+    * @param repositoryName String name of target repository
+    * @param snapshotName String name of snapshot
+    * @param waitForCompletion Boolean whether to wait for snapshot response; Defaults to false
+    * @return EsResult containing an Elasticsearch accepted response
     */
   def snapshotRestore(repositoryName: String, snapshotName: String, waitForCompletion: Boolean = false): EsResult[AcceptResponse] = {
     val restoreAction = new SnapshotRestoreBuilder(repositoryName, snapshotName, waitForCompletion).build
@@ -41,7 +54,11 @@ trait EsSnapshots extends JestUtils {
   }
 
   /**
-    * Get the list of all snapshots defined for a specific repository
+    * Returns list of all snapshots defined for a given repository.
+    * Maps Elasticsearch response JSON objects to a sequence of JSON objects of snapshots and their indices then
+    * wraps this sequence in a case class.
+    * @param repositoryName String name of target repository
+    * @return EsResult containing an list of snapshots as [[com.fasterxml.jackson.databind.JsonNode]]
     */
   def snapshotList(repositoryName: String): EsResult[ListSnapshotResponse] = {
     val listSnapshotAction = new SnapshotListBuilder(repositoryName).build
@@ -62,8 +79,12 @@ trait EsSnapshots extends JestUtils {
   }
 
   /**
-    * Create a repository with the specified settings. Settings are the payload as defined here:
+    * Creates a repository with the specified settings and returns an Elasticsearch acknowledgment.
+    * Settings are the payload as defined here:
     * https://www.elastic.co/guide/en/elasticsearch/reference/1.4/modules-snapshots.html#_repositories
+    * @param repositoryName String name of target repository
+    * @param repositorySettings String of repository settings
+    * @return EsResult containing an Elasticsearch acknowledgment
     */
   def repositoryCreate(repositoryName: String, repositorySettings: String): EsResult[Acknowledgement] = {
     val createRepositoryAction = new RepositoryCreateBuilder(repositoryName, repositorySettings).build
@@ -72,7 +93,9 @@ trait EsSnapshots extends JestUtils {
   }
 
   /**
-    * Delete a repository
+    * Deletes a repository and returns an Elasticsearch acknowledgment.
+    * @param repositoryName String name of target repository
+    * @return EsResult containing an Elasticsearch acknowledgment
     */
   def repositoryDelete(repositoryName: String): EsResult[Acknowledgement] = {
     val deleteAction = new RepositoryDeleteBuilder(repositoryName).build
@@ -81,7 +104,8 @@ trait EsSnapshots extends JestUtils {
   }
 
   /**
-    * Get the list of all repositories defined in the ES cluster
+    * Returns the list of all repositories defined in the ES cluster.
+    * @return EsResult containing a sequence of repository definitions
     */
   def repositoryList(): EsResult[ListRepositoryResponse] = {
     val listRepositoriesAction = new RepositoryListBuilder().build
@@ -102,10 +126,18 @@ trait EsSnapshots extends JestUtils {
   }
 }
 
+/**
+  * Case class for an Elasticsearch Snapshot response.
+  * @param snapshot Ssnapshot as option of [[com.fasterxml.jackson.databind.JsonNode]]
+  */
 case class SnapshotResponse(
   snapshot: Option[JsonNode]
 )
 
+/**
+  * Case class for an Elasticsearch accept response.
+  * @param accepted Boolean whether the request was accepted
+  */
 case class AcceptResponse(
   accepted: Boolean
 )
