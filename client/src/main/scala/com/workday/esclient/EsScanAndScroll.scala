@@ -7,7 +7,7 @@ import io.searchbox.core.{Search, SearchScroll}
 import io.searchbox.params.Parameters
 
 /**
-  * Elasticsearch Scan and Scroll APIs
+  * Trait wrapping Elasticsearch Scan and Scroll APIs.
   */
 trait EsScanAndScroll extends JestUtils with EsQuery {
   private[this] val emptyScanAndScrollResponse: EsResult[ScanAndScrollResponse] =
@@ -15,13 +15,13 @@ trait EsScanAndScroll extends JestUtils with EsQuery {
   private[this] val UnlimitedResultsDefaultParams = Map(EsNames.FilterPath -> EsNames.FilterPathParams)
 
   /**
-    * Perform a ScanAndScroll search, combine all paged results into an iterator and
-    * aggregate each result in the iterator into a single EsResult[EsSearchResponse]
+    * Performs a ScanAndScroll search, combines all paged results into an iterator and
+    * aggregates each result in the iterator into a single EsResult[EsSearchResponse].
     *
-    * @param index to search
-    * @param typeName index type
-    * @param query to perform
-    * @param scanAndScrollSize size of each scan and scroll response
+    * @param index String index to search
+    * @param typeName String index type
+    * @param query String query to perform
+    * @param scanAndScrollSize Int size of each scan and scroll response
     * @return EsResult[EsSearchResponse] of aggregate result from scan-and-scrolled results
     */
   def unlimitedSearch(index: String, typeName: String = "", query: String, scanAndScrollSize: Int): EsResult[EsSearchResponse] = {
@@ -39,7 +39,13 @@ trait EsScanAndScroll extends JestUtils with EsQuery {
   }
 
   /**
-    * Do a scan and scroll search, and return an iterator over the results. (https://www.elastic.co/guide/en/elasticsearch/guide/current/scan-scroll.html)
+    * Does a scan and scroll search and returns an iterator over the results.
+    * (https://www.elastic.co/guide/en/elasticsearch/guide/current/scan-scroll.html)
+    * @param index String index to search
+    * @param typeName String index type
+    * @param query String query to perform
+    * @param params Map[String,Any] query parameters to include; defaults to empty Map
+    * @return Iterator over EsResults of SearchHits
     */
   def createScrolledSearchIterator(index: String, typeName: String, query: String, params: Map[String, Any] = Map()): Iterator[EsResult[SearchHits]] = {
     val result = createScrolledSearch(index, typeName, query, params)
