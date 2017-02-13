@@ -51,16 +51,34 @@ trait EsScanAndScroll extends JestUtils with EsQuery {
     getScrolledSearchHitsIterator(result)
   }
 
+  /**
+    * Creates a scrolled search and returns the Jest response.
+    * @param index String index to search on
+    * @param typeName String type name to search
+    * @param query String query to search on
+    * @param params String params for search query
+    * @return EsResult of Elasticsearch scan and scroll response
+    */
   def createScrolledSearch(index: String, typeName: String = "", query: String, params: Map[String, Any] = Map()): EsResult[ScanAndScrollResponse] = {
     val jestResult : JestResult = jest.execute(buildScrolledSearchAction(query, index, typeName, params))
     handleScrollResult(jestResult)
   }
 
+  /**
+    * Gets the scrolled search result using a scroll ID
+    * @param scrollID String provided scroll ID
+    * @return EsResult of Elasticsearch scan and scroll response
+    */
   def getScrolledSearchResults(scrollID: String): EsResult[ScanAndScrollResponse] = {
     val jestResult : JestResult = jest.execute(buildGetScrolledSearchResultsAction(scrollID))
     handleScrollResult(jestResult)
   }
 
+  /**
+    * Returns the Elasticsearch scan and scroll response from the Jest client
+    * @param scrollResult Jest result to be handled
+    * @return EsResult of Elasticsearch scan and scroll response
+    */
   private[this] def handleScrollResult(scrollResult: JestResult): EsResult[ScanAndScrollResponse] = {
     handleJestResult(scrollResult) { successfulJestResult =>
       val json = successfulJestResult.getJsonObject
