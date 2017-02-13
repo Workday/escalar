@@ -17,7 +17,6 @@ trait EsScanAndScroll extends JestUtils with EsQuery {
   /**
     * Performs a ScanAndScroll search, combines all paged results into an iterator and
     * aggregates each result in the iterator into a single EsResult[EsSearchResponse].
-    *
     * @param index String index to search
     * @param typeName String index type
     * @param query String query to perform
@@ -71,9 +70,8 @@ trait EsScanAndScroll extends JestUtils with EsQuery {
   }
 
   /**
-    * Adds the values of the nextScanAndScrollResult onto the accumulator
-    * If we encounter an error in the scan and scroll search, just return the error and stop accumulating
-    *
+    * Adds the values of the nextScanAndScrollResult onto the accumulator.
+    * If we encounter an error in the scan and scroll search, just return the error and stop accumulating.
     * @param scanAndScrollResultAccumulator tuple of current accumulated results and boolean of whether an error has been encountered already
     * @param nextScanAndScrollResult the next "page" in the ScanAndScroll search result
     * @return the current accumulated response and whether we should continue accumulating
@@ -98,9 +96,8 @@ trait EsScanAndScroll extends JestUtils with EsQuery {
   }
 
   /**
-    * Build a search hits iterator from the result of a scan and scroll search
-    *
-    * @param result the current "page" in the scroll result
+    * Returns a search hits iterator from the result of a scan and scroll search.
+    * @param result EsResult scan and scroll response of the current "page" in the scroll result
     * @return iterator SearchHits
     */
   @VisibleForTesting
@@ -116,10 +113,9 @@ trait EsScanAndScroll extends JestUtils with EsQuery {
   }
 
   /**
-    * Recursively build a scan and response iterator starting at current page of the results
-    *
-    * @param resultPage the current "page" in the scroll result
-    * @param forceFetchNextResults the initial createScrolledSearch() call returns a scrollID with no hits, so in that
+    * Recursively builds a scan and response iterator starting at current page of the results.
+    * @param resultPage EsResult scan and scroll response of the current "page" in the scroll result
+    * @param forceFetchNextResults Boolean the initial createScrolledSearch() call returns a scrollID with no hits, so in that
     *                        case only we have to force it to fetch the next results
     * @return an iterator of ScanAndScrollResponses
     */
@@ -143,7 +139,11 @@ trait EsScanAndScroll extends JestUtils with EsQuery {
   }
 
   /**
-    * Combine two SearchHits into a new SearchHit. The maximum of two maxScores is preserved
+    * Combines two SearchHits into a new SearchHit.
+    * The maximum of two maxScores is preserved.
+    * @param searchHits1 first SearchHits instance
+    * @param searchHits2 second SearchHits instance
+    * @return the combined SearchHits instance.
     */
   private[this] def addSearchHits(searchHits1: SearchHits, searchHits2: SearchHits): SearchHits = {
     SearchHits(
@@ -154,7 +154,11 @@ trait EsScanAndScroll extends JestUtils with EsQuery {
   }
 
   /**
-    * Find the max of two maxScore Options. Return the first non-None maxScore; if both are None, return None
+    * Returns the max of two maxScore Options.
+    * Finds the first non-None maxScore; if both are None, return None.
+    * @param maxScore1 Option of Double or None
+    * @param maxScore2 Option of Double or None
+    * @return Option max score of Double or None
     */
   private[this] def maxMaxScores(maxScore1: Option[Double], maxScore2: Option[Double]): Option[Double] = {
     (maxScore1, maxScore2) match {
@@ -163,6 +167,14 @@ trait EsScanAndScroll extends JestUtils with EsQuery {
     }
   }
 
+  /**
+    * Returns a search action set with given parameters.
+    * @param query String query to be made
+    * @param index String index to query on
+    * @param typeName String typename to search
+    * @param params Map of params to set
+    * @return Elasticsearch search action
+    */
   @VisibleForTesting
   private[esclient] def buildScrolledSearchAction(query: String, index: String, typeName: String = "", params: Map[String, Any] = Map()): Search = {
     var searchAction = new Search.Builder(query).addIndex(index)
@@ -173,6 +185,11 @@ trait EsScanAndScroll extends JestUtils with EsQuery {
     searchAction.build()
   }
 
+  /**
+    * Builds a SearchScroll instance with given scrollID.
+    * @param scrollID String ID
+    * @return SearchScroll instance
+    */
   @VisibleForTesting
   private[esclient] def buildGetScrolledSearchResultsAction(scrollID: String): SearchScroll = {
     new SearchScroll.Builder(scrollID, EsNames.EsScanAndScrollTime).build()
