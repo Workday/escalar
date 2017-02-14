@@ -303,20 +303,58 @@ object EsQueryHelpers {
     Some(Map("or" -> filters))
   }
 
+  /**
+    * Returns a map for making a general Elasticsearch query.
+    * @param maps for being included in the ES query.
+    * @return a single Map with a top level "query" key.
+    */
   def query(maps: Option[Map[String, Any]]*): Option[Map[String, Any]] = genMap("query", maps:_*)
 
+  /**
+    * Returns a map for using Elasticsearch's filter mechanism.
+    * @param maps for being included in the ES query.
+    * @return a single Map with a top level "filter" key.
+    */
   def filter(maps: Option[Map[String, Any]]*): Option[Map[String, Any]] = genMap("filter", maps:_*)
 
+  /**
+    * Returns a map for including a group of parameters in an Elasticsearch request.
+    * @param maps for being included in the ES query.
+    * @return a single Map with a top level "params" key.
+    */
   def params(maps: Option[Map[String, Any]]*): Option[Map[String, Any]] = genMap("params", maps:_*)
 
+  /**
+    * Returns a map for using Elasticsearch's aggs mechanism.
+    * @param maps for being included in the ES query.
+    * @return a single Map with a top level "aggs" key.
+    */
   def aggs(maps: Option[Map[String, Any]]*): Option[Map[String, Any]] = genMap("aggs", maps:_*)
 
+  /**
+    * Returns a map for using Elasticsearch's post_filter mechanism.
+    * @param maps for being included in the ES query.
+    * @return a single Map with a top level "post_filter" key.
+    */
   def postFilter(maps: Option[Map[String, Any]]*): Option[Map[String, Any]] = genMap("post_filter", maps:_*)
 
+  /**
+    * Maps a top level term to a Map[String,Any] containing Elasticsearch query parameters.
+    * @param term String term to set as parent key.
+    * @param maps a number of maps containing ES parameters.
+    * @return a single Map with a top level term and associated maps.
+    */
   private[this] def genMap(term: String, maps: Option[Map[String, Any]]*): Option[Map[String, Any]] = {
     seqOption(maps:_*).map(m => Map(term -> m.fold(Map())(_ ++ _)))
   }
 
+  /**
+    * Returns a map for making filtered Elasticsearch queries.
+    * Combines and matches on optional query ops and filter ops.
+    * @param qOpt Map representing the query operation.
+    * @param fOpt Map representing the filter operation.
+    * @return Combined map for making filtered queries.
+    */
   def filtered(qOpt: Option[Map[String, Any]], fOpt: Option[Map[String, Any]]): Option[Map[String, Any]] = {
     (qOpt, fOpt) match {
       case (None, None) => None
@@ -326,6 +364,14 @@ object EsQueryHelpers {
     }
   }
 
+  /**
+    * Returns a map for making Function Score Elastichsearch queries.
+    * This API requires the user to provide functions to score each document returned by the query.
+    * @param q Map representing the query operation.
+    * @param fs Map representing the function score fields.
+    * @param scoreMode String representing how the new scores will be combined.
+    * @return Combined map for making Function Score queries.
+    */
   def functionScore(q: Option[Map[String, Any]], fs: Seq[Map[String, Any]], scoreMode: String): Option[Map[String, Any]] = {
     if (q.isEmpty)
       Some(Map("function_score" -> Map("functions" -> fs, "score_mode" -> scoreMode)))
@@ -333,6 +379,13 @@ object EsQueryHelpers {
       Some(Map("function_score" -> Map("functions" -> fs, "score_mode" -> scoreMode, "query" -> q.get)))
   }
 
+  /**
+    * Returns a template map for making Template Elastichsearch queries.
+    * ES Template queries use params maps to substitute into the templated query.
+    * @param q Map representing the templated query operation.
+    * @param p Map representing the params to substitute into the query.
+    * @return Combined map for making Template queries.
+    */
   def template(q: Option[Map[String, Any]], p: Option[Map[String, Any]]): Option[Map[String, Any]] = {
     if (q.isEmpty)
       None
@@ -340,6 +393,14 @@ object EsQueryHelpers {
       Some(Map("template" -> (q.get ++ p.get)))
   }
 
+  /**
+    * Returns a map for making Dis Max Elasticsearch queries.
+    * Dis Max returns the union of of documents retrieved from the subqueries.
+    * @param queries Map representing subqueries.
+    * @param tieBreaker Double tiebreaker parameter for favoring documents with preferred term usage.
+    * @param boost Double boost parameter.
+    * @return Combined map for making Dis Max queries.
+    */
   def disMax(queries: Seq[Map[String, Any]], tieBreaker: Option[Double] = None, boost: Option[Double] = None): Option[Map[String, Any]] = {
     Some(Map(
       "dis_max" -> Seq(
@@ -350,6 +411,15 @@ object EsQueryHelpers {
     ))
   }
 
+  /**
+    * Returns a map for making Range Elasticsearch queries.
+    * @param fieldName String field name to query on.
+    * @param lowerBound Double value for lower bound of range.
+    * @param lowerBoundOp Comparison op for lower bound.
+    * @param upperBound Double value for upper bound of range.
+    * @param upperBoundOp Comparison op for upper bound.
+    * @return Combined map for making Range queries.
+    */
   def range(fieldName: String, lowerBound: Option[Double], lowerBoundOp: ComparisonOp,
             upperBound: Option[Double], upperBoundOp: ComparisonOp): Option[Map[String, Any]] = {
     val range = Seq(lowerBound.map(lowerBoundOp.op -> _), upperBound.map(upperBoundOp.op -> _)).flatten.toMap
@@ -358,9 +428,28 @@ object EsQueryHelpers {
 }
 
 // scalastyle:off
+/**
+  * Convenience trait for representing Elasticsearch comparison operators.
+  */
 sealed trait ComparisonOp { def op: String }
+
+/**
+  * Case for the "greater than or equal to" comparison operator.
+  */
 case object gte extends ComparisonOp { val op = "gte" }
+
+/**
+  * Case for the "greater than" comparison operator.
+  */
 case object gt  extends ComparisonOp { val op = "gt" }
+
+/**
+  * Case for the "less than or equal to" operator.
+  */
 case object lte extends ComparisonOp { val op = "lte" }
+
+/**
+  * Case for the "less than" operator.
+  */
 case object lt  extends ComparisonOp { val op = "lt" }
 //  scalastyle:on
