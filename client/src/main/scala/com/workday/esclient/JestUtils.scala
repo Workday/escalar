@@ -1,3 +1,10 @@
+/*
+ * Copyright 2016 Workday, Inc.
+ *
+ * This software is available under the MIT license.
+ * Please see the LICENSE.txt file in this project.
+ */
+
 package com.workday.esclient
 
 import com.fasterxml.jackson.core.JsonParseException

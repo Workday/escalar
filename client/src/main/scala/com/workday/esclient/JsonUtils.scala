@@ -1,3 +1,10 @@
+/*
+ * Copyright 2016 Workday, Inc.
+ *
+ * This software is available under the MIT license.
+ * Please see the LICENSE.txt file in this project.
+ */
+
 package com.workday.esclient
 
 import java.io.StringWriter
@@ -83,20 +90,4 @@ object JsonUtils {
       // $COVERAGE-ON$
     }
   }
-
-  //TODO: replace jackson wrapper with circe wrapper.
-  /*
-  def mapToJson(rawValue: Map[String, Any]): Map[String, Json] = {
-    rawValue.map { case (k, v) =>
-      (k, v match {
-        case nestedJson: Map[String, Any] => mapToJson(nestedJson).asJson
-        case primitive: Int     => primitive.asJson
-        case primitive: Double  => primitive.asJson
-        case primitive: String  => primitive.asJson
-        case primitive: Boolean => primitive.asJson
-        case _ => Json.Null
-      })
-    }
-  }
-  */
 }
