@@ -9,7 +9,7 @@ import io.searchbox.core._
 import scala.collection.JavaConverters.{asJavaCollectionConverter, asScalaIteratorConverter}
 
 /**
-  * Elasticsearch Query APIs
+  * Trait wrapping Elasticsearch Query APIs
   */
 trait EsQuery extends JestUtils {
 

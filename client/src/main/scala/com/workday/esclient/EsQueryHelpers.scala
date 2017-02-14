@@ -1,13 +1,26 @@
 package com.workday.esclient
 
+/**
+  * Helper object for Elasticsearch queries
+  */
 object EsQueryHelpers {
 
+  /**
+    * Returns a flattened sequence or None.
+    * @param els Option of type T or None
+    * @tparam T generic type
+    * @return Option sequence of type T or None
+    */
   def seqOption[T](els: Option[T]*): Option[Seq[T]] = {
     if (els.flatten.isEmpty) None else Some(els.flatten)
   }
 
   /**
-    * Acceptable comparator key values for "terms": gte, gt, lte, lt
+    * Returns a Range map of comparator keys and values for the search Range Elasticsearch API.
+    * Acceptable comparator key values for "terms": gte, gt, lte, lt.
+    * @param field String field to compare range on
+    * @param terms Map of comparator Strings and associated Long values
+    * @return Map of comparator keys and values
     */
   def range(field: String, terms: Map[String, Long]): Option[Map[String, Map[String, Any]]] = {
     Some(Map("range" -> Map(
@@ -15,6 +28,13 @@ object EsQueryHelpers {
     )))
   }
 
+  /**
+    * Returns a Term map of a field key and values for the search Term Elasticsearch API.
+    * @param field String field name for the term
+    * @param ts Any type value to associate with field
+    * @param options additional map of term options
+    * @return Map of term field key and any options
+    */
   def term(
     field: String,
     ts: Any,
@@ -23,6 +43,13 @@ object EsQueryHelpers {
     Some(Map("term" -> (Map(field -> ts) ++ options)))
   }
 
+  /**
+    * Returns a Terms map of a field key and a sequence of values for the search Terms Elasticsearch API.
+    * @param field String field name for the term
+    * @param ts Sequence of values to associate with field
+    * @param options additional map of term options
+    * @return Map of terms field key and any options
+    */
   def terms(
     field: String,
     ts: Seq[Any],
@@ -31,6 +58,12 @@ object EsQueryHelpers {
     Some(Map("terms" -> (Map(field -> ts) ++ options)))
   }
 
+  /**
+    * Returns an Aggregations Terms map for the search Terms Aggregation Elasticsearch API.
+    * @param field String aggregation field
+    * @param options Map of options to aggregate on
+    * @return Map of aggregation fields and any options
+    */
   def aggregationTerms(
     field: String,
     options: Map[String, Any] = Map.empty
@@ -38,24 +71,48 @@ object EsQueryHelpers {
     Some(Map("terms" -> (Map("field" -> field) ++ options)))
   }
 
+  /**
+    * Returns a keyed Aggregation Range map for the Range Aggregation Elasticsearch API.
+    * Keyed parameter associates a unique string with each range bucket.
+    * @param field String field to aggregate on
+    * @param ranges Sequences of map ranges to bucket
+    * @return Map of keyed range fields.
+    */
   def keyedAggregationRanges(field: String, ranges: Seq[Map[String, Any]]): Option[Map[String, Any]] = {
     val rangeMap = Map("field" -> field, "keyed" -> true, "ranges" -> ranges)
     Some(Map("range" -> rangeMap))
   }
 
+  /**
+    * Returns a map of Range buckets with String keys for the Range Aggregation Elasticsearch API.
+    * If neither a "to" nor "from" range are provided, returns None.
+    * @param rangeKey String key for the range bucket
+    * @param from Double "from" range
+    * @param to Double "to" range
+    * @return Map of keyed range buckets
+    */
   def keyedAggregationRange(rangeKey: String, from: Option[Double], to: Option[Double]): Option[Map[String, Any]] = {
     if (from.isDefined || to.isDefined) Some(Map("key" -> rangeKey) ++ from.map("from" -> _) ++ to.map("to" -> _))
     else None
   }
 
+  /**
+    * Returns a map of Geo Distance parameters for the Geo Distance Elasticsearch API.
+    * @param field String field to serve as the center location
+    * @param lat String latitude value
+    * @param lon String longitude value
+    * @param distance String distance value
+    * @return Map of Geo Distance parameters
+    */
   def geoDistance(field: String, lat: String, lon: String, distance: String): Option[Map[String, Map[String, Object]]] = {
     Some(Map("geo_distance" -> Map("distance" -> distance, field -> Map("lat" -> lat, "lon" -> lon))))
   }
 
   /**
+   * Returns a map to run a terms lookup query using the Elasticsearch Terms lookup API.
+   * Supports all but the routing field for the Terms lookup mechanism.
    * https://www.elastic.co/guide/en/elasticsearch/reference/1.7/query-dsl-terms-filter.html
    * Also see org.elasticsearch.index.query.TermsFilterParser to see ES's underlying code handling this.
-   *
    * @param field the document field we are filtering on
    * @param index the index to lookup term values from
    * @param typeName the type of the lookup documents
@@ -65,6 +122,7 @@ object EsQueryHelpers {
    * @param cacheKey the cache key to use for the total filter, useful if you want to manually wipe the cache
    * @param queryName name to give this query
    *                  (see [[https://www.elastic.co/guide/en/elasticsearch/reference/5.1/search-request-named-queries-and-filters.html]])
+   * @return Map for a Terms query with ES lookup fields
    */
   // scalastyle:off parameter.number
   def termsFromLookup(
@@ -88,6 +146,12 @@ object EsQueryHelpers {
     Some(Map("terms" -> map))
   }
 
+  /**
+    * Returns a map with a query string for use in the Query Elasticsearch API.
+    * @param query String query for ES
+    * @param otherOption Tuples of additional fields to include in ES query
+    * @return Query string map for ES
+    */
   def queryString(query: String, otherOption: (String, Any)*)
     : Option[Map[String, Map[String, Any]]] = {
     if (query.isEmpty)
@@ -98,10 +162,24 @@ object EsQueryHelpers {
       Some(Map("query_string" -> (otherOption :+ ("query" -> query)).toMap))
   }
 
+  /**
+    * Returns a map for making match queries using the Match Elasticsearch API.
+    * @param field String field to match on
+    * @param str String value to match on
+    * @param otherOption Tuples of additional fields to include in the query
+    * @return Map for using the Query Match API
+    */
   def matchQuery(field: String, str: String, otherOption: (String, Any)*): Option[Map[String, Map[String, Any]]] = {
     mkFieldQuery("match", field, str, otherOption)
   }
 
+  /**
+    * 
+    * @param fields
+    * @param str
+    * @param otherOption
+    * @return
+    */
   def multiMatchQuery(
     fields: Seq[String],
     str: String,
