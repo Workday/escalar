@@ -1,3 +1,10 @@
+/*
+ * Copyright 2016 Workday, Inc.
+ *
+ * This software is available under the MIT license.
+ * Please see the LICENSE.txt file in this project.
+ */
+
 package com.workday.esclient
 
 import com.fasterxml.jackson.annotation.{JsonIgnoreProperties, JsonProperty}
@@ -9,15 +16,26 @@ import io.searchbox.core.Cat
 
 import scala.collection.JavaConverters.{asScalaBufferConverter, mapAsScalaMapConverter}
 /**
-  * Elasticsearch Cluster-level APIs
+  * Trait wrapping Elasticsearch Cluster-level APIs
   */
 trait EsClusterOps extends JestUtils {
 
+  /**
+    * Returns an Elasticsearch cluster health response.
+    * @return EsResult wrapping the cluster health response from ES.
+    */
   def clusterHealth: EsResult[HealthResponse] = {
     val jestResult = jest.execute(new Health.Builder().build())
     toEsResult[HealthResponse](jestResult)
   }
 
+  /**
+    * Returns the least healthy index in the given sequence of Elastichsearch indices.
+    * Maps to /_cluster/health/index1,index2,... .
+    * @param indices Sequence of ES index names.
+    * @param timeout String ES timeout. Defaults to [[com.workday.esclient.actions.IndexHealthAction.DEFAULT_TIMEOUT]]
+    * @return Tuple of the least healthy index status and whether the request timed out.
+    */
   // performant way to access health of multiple indices, returns the health of the least healthy index from given list of indices
   // --> maps to /_cluster/health/index1,index2,... (see https://www.elastic.co/guide/en/elasticsearch/reference/1.7/cluster-health.html)
   // if an index is missing, this will return as "red" (and "timed_out": true)
@@ -27,34 +45,57 @@ trait EsClusterOps extends JestUtils {
     (res.status, res.timedOut)
   }
 
-  // returns information about all shards in the cluster (including unassigned shards) --> maps to /_cat/shards
+  /**
+    * Cats shard information from Elasticsearch.
+    * Includes unassigned shards. Maps to /_cat/shards
+    * @param indexName String ES index name. Defaults to empty string.
+    * @return EsResult of sequence of [[com.workday.esclient.actions.ShardInfo]].
+    */
   def catShards(indexName: String = ""): EsResult[Seq[ShardInfo]] = {
     val getAction = buildCatShards(indexName)
     val jestResult = jest.execute(getAction)
     toEsResult[Seq[ShardInfo]](jestResult)
   }
 
-  // reallocates the given list of shards to the assigned destination nodes --> maps to /_cluster/reroute
+  /**
+    * Reallocates a list of shards to specified destination nodes and returns an acknowledgment from Elasticsearch.
+    * Maps to /_cluster/reroute.
+    * @param shardAllocation Sequence of RerouteOps containing shard name and destination node.
+    * @return EsResult of acknowledgment from ES.
+    */
   def allocateShards(shardAllocation: Seq[RerouteOp]): EsResult[RerouteAcknowledgment] = {
     val jestResult = jest.execute(new RerouteBuilder(shardAllocation).build)
     toEsResult[RerouteAcknowledgment](jestResult)
   }
 
-  // returns all currently available nodes in the cluster (does not include downed nodes) --> maps to /_cat/nodes
+  /**
+    * Returns all currently available nodes in the Elasticsearch cluster.
+    * Does not include downed nodes. Maps to /_cat/nodes
+    * @return EsResult of sequence of [[com.workday.esclient.actions.NodeInfo]].
+    */
   def availableNodes: EsResult[Seq[NodeInfo]] = {
     val getAction = buildCatAction(CatAction.CAT_NODES)
     val jestResult = jest.execute(getAction)
     toEsResult[Seq[NodeInfo]](jestResult)
   }
 
-  // Get the index status
+  /**
+    * Gets the status for the given Elasticsearch index.
+    * @param indexName String ES index name.
+    * @return EsResult of sequence of [[com.workday.esclient.actions.IndexInfo]]
+    */
   def catIndex(indexName: String) : EsResult[Seq[IndexInfo]] = {
     val catAction = buildCatAction(CatAction.CAT_INDICES, indexName)
     val jestResult = jest.execute(catAction)
     toEsResult[Seq[IndexInfo]](jestResult)
   }
 
-  // Get index status for all indices --> maps to /_cat/indices
+  /**
+    * Gets the index status for all Elasticsearch indices.
+    * Maps to /_cat/indices
+    * @throws com.google.gson.stream.MalformedJsonException
+    * @return EsResult of sequence of [[com.workday.esclient.actions.IndexInfo]]
+    */
   @throws(classOf[com.google.gson.stream.MalformedJsonException])
   def catAllIndices: EsResult[Seq[IndexInfo]] = {
     val catIndices = buildCatIndices()
