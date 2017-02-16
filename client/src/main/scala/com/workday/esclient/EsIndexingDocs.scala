@@ -168,12 +168,25 @@ trait EsIndexingDocs extends JestUtils {
     toEsResult[AnalyzeResponse](jestResult)
   }
 
+  /**
+    * Submits the given source for analysis using an Elasticsearch Analyzer, defautlting to the standard analyzer.
+    * @param source String source to analyze.
+    * @param index String ES index name.
+    * @param analyzer String name of ES Analyzer to use.
+    * @return EsResult of [[com.workday.esclient.AnalyzeResponse]]
+    */
   // Will use whatever analyzer is specified, defaulting to "standard" if none
   def analyzeWithIndexAnalyzer(source: String, index: String, analyzer: String = EsNames.standardAnalyzerName): EsResult[AnalyzeResponse] = {
     val jestResult = jest.execute(new Analyze.Builder().source(source).index(index).analyzer(analyzer).build())
     toEsResult[AnalyzeResponse](jestResult)
   }
 
+  /**
+    * Deletes Elasticsearch documents that match a given query string.
+    * @param index String ES index name.
+    * @param query Optional string to query ES. Defaults to None.
+    * @return EsResult of [[com.workday.esclient.DeleteByQueryResponse]]
+    */
   def deleteDocsByQuery(index: String, query: Option[String] = None): EsResult[DeleteByQueryResponse] = {
     // Default query is "match all"
     val jestResult = jest.execute(buildDeleteByQueryAction(index, query = query))
