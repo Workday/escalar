@@ -1,3 +1,10 @@
+/*
+ * Copyright 2016 Workday, Inc.
+ *
+ * This software is available under the MIT license.
+ * Please see the LICENSE.txt file in this project.
+ */
+
 package com.workday.esclient
 
 import com.fasterxml.jackson.annotation.JsonProperty
@@ -14,17 +21,29 @@ import org.slf4j.LoggerFactory
 import scala.collection.JavaConverters.{asJavaCollectionConverter, asScalaIteratorConverter}
 
 /**
-  * Elasticsearch Index Metadata APIs
+  * Trait wrapping Elasticsearch Index Metadata APIs
   */
 trait EsIndexingDocs extends JestUtils {
   val ESBackPressureErrorCode = 429
   val SleepTimeToHandleBackPressureMs = 3000
   val RetriesLimit = 5
 
+  /**
+    * Gets [[com.workday.esclient.EsIndexingDocs.SleepTimeToHandleBackPressureMs]]
+    * @return Int [[com.workday.esclient.EsIndexingDocs.SleepTimeToHandleBackPressureMs]]
+    */
   def getSleepTimeForBackpressure: Int = SleepTimeToHandleBackPressureMs
 
   val logger = LoggerFactory.getLogger(this.getClass)
 
+  /**
+    * Indexes a given doc to an Elasticsearch index under the given id.
+    * @param index String ES index name.
+    * @param typeName String ES type name.
+    * @param id String id to index document under.
+    * @param doc String doc to index.
+    * @return EsResult of [[com.workday.esclient.UpdateResponse]]
+    */
   def index(index: String, typeName: String, id: String, doc: String): EsResult[UpdateResponse] = {
     if (index.isEmpty || typeName.isEmpty || id.isEmpty || doc.isEmpty) {
       EsInvalidResponse("Invalid arguments")
@@ -36,17 +55,23 @@ trait EsIndexingDocs extends JestUtils {
     }
   }
 
+  /**
+    * Attempts a bulk sequence of Elasticsearch actions and retries on failure up to a given depth of retries.
+    * @param actions Sequence of action to attempt.
+    * @param depth Int recursion depth limit. Defaults to 1. [[com.workday.esclient.EsIndexingDocs.RetriesLimit]] is set to 5.
+    * @return EsResult of [[com.workday.esclient.BulkResponse]]
+    */
   def bulkWithRetry(actions: Seq[Action], depth: Int = 1): EsResult[BulkResponse] = {
-    /**
+    /*
       * 1. Build a numbered list of all actions.
       * 2. call bulk get the results.
       * 3. Build a numbered list of response.
-      *   1. Filter the numbered list for 429 response code.
-      *   2. Extract the actions for the 429 indexed responses.
-      *   3. Wait for a few seconds.
-      *   4. Recursively call bulkRetry.
-      *   5. Once the call comes back. Get the responses and add them to the existing response.
-      *   6. Return response.
+      *   a. Filter the numbered list for 429 response code.
+      *   b. Extract the actions for the 429 indexed responses.
+      *   c. Wait for a few seconds.
+      *   d. Recursively call bulkRetry.
+      *   e. Once the call comes back. Get the responses and add them to the existing response.
+      *   f. Return response.
       */
     val bulkResponse = bulk(actions)
     val currentActions = actions.zipWithIndex.map{t => (t._2, t._1)}
@@ -85,6 +110,11 @@ trait EsIndexingDocs extends JestUtils {
     }
   }
 
+  /**
+    * Parses a given Elasticsearch action sequence and executes the actions.
+    * @param actions Sequence of ES update, index, and delete actions to perform.
+    * @return EsResult of [[com.workday.esclient.BulkResponse]]
+    */
   // scalastyle:off cyclomatic.complexity
   def bulk(actions: Seq[Action]): EsResult[BulkResponse] = {
     lazy val EmptyResponse = new EsResponse[BulkResponse](new BulkResponse(false, Nil))
@@ -120,10 +150,19 @@ trait EsIndexingDocs extends JestUtils {
   }
   // scalastyle:on cyclomatic.complexity
 
+  /**
+    * Flushes an Elasticsearch index.
+    * @param index String ES index name.
+    */
   def forceFlush(index: String): Unit = {
     jest.execute(new Flush.Builder().addIndex(index).setParameter("force", "").build())
   }
 
+  /**
+    * Submits the given source for analysis using an Elasticsearch Analyzer and returns the response.
+    * @param source String source to analyze.
+    * @return EsResult of [[com.workday.esclient.AnalyzeResponse]]
+    */
   def analyze(source: String): EsResult[AnalyzeResponse] = {
     val jestResult = jest.execute(new Analyze.Builder().source(source).build())
     toEsResult[AnalyzeResponse](jestResult)
