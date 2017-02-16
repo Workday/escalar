@@ -28,7 +28,7 @@ class RepositoryCreateBuilder(repositoryName: String, repositoryDefinition: Stri
 }
 
 /**
-  * Action class for Create Repository Elasticsearch API.
+  * Action class for creating repositories using the Elasticsearch Snapshot API.
   * @param builder [[com.workday.esclient.actions.RepositoryCreateBuilder]].
   */
 class RepositoryCreateAction(builder: RepositoryCreateBuilder) extends GenericResultAbstractAction(builder) {
@@ -50,7 +50,7 @@ class RepositoryCreateAction(builder: RepositoryCreateBuilder) extends GenericRe
   override def getData(gson: Gson): String = definition
 
   /**
-    * Builds the URI to use the ES Snapshot API.
+    * Builds the URI to use the create repository API.
     * @return Sting URI.
     */
   protected override def buildURI: String = s"_snapshot/$repository"

@@ -17,12 +17,12 @@ object IndexHealthAction {
 }
 
 /**
-  * Action class for the Elasticsearch Index Health API.
+  * Action class for showing index health using the Elasticsearch Cluster Health API.
   * @param builder [[com.workday.esclient.actions.IndexHealthBuilder]].
   */
 class IndexHealthAction(builder: IndexHealthBuilder) extends Health(builder) {
   /**
-    * Builds the URI to hit the Elasticsearch Index Health API.
+    * Builds the URI to hit the index health API.
     * @return String URI.
     */
   protected override def buildURI: String = super.buildURI + builder.indices.mkString(",") + "?timeout=" + builder.timeout

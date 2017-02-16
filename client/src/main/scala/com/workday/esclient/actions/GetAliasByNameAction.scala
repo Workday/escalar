@@ -10,7 +10,7 @@ package com.workday.esclient.actions
 import io.searchbox.action.{AbstractMultiTypeActionBuilder, GenericResultAbstractAction}
 
 /**
-  * Action class for the Get Alias by Name Elasticsearch API.
+  * Action class for getting aliases by name using the Elasticsearch Alias API.
   * @param builder [[com.workday.esclient.actions.GetAliasByNameBuilder]]
   */
 class GetAliasByNameAction(builder: GetAliasByNameBuilder) extends GenericResultAbstractAction(builder) {

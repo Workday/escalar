@@ -10,7 +10,7 @@ package com.workday.esclient.actions
 import io.searchbox.action.{AbstractMultiTypeActionBuilder, GenericResultAbstractAction}
 
 /**
-  * Builder class for Elasticsearch Cluster Settings list actions.
+  * Builder class for [[com.workday.esclient.actions.ClusterSettingsListAction]].
   */
 class ClusterSettingsListBuilder extends AbstractMultiTypeActionBuilder[ClusterSettingsListAction, ClusterSettingsListBuilder] {
 
@@ -22,7 +22,7 @@ class ClusterSettingsListBuilder extends AbstractMultiTypeActionBuilder[ClusterS
 }
 
 /**
-  * Cluster settings list action class.
+  * Action class for listing cluster settings using the Elasticsearch Cluster Update Settings API.
   * @param builder Builder for the action.
   */
 class ClusterSettingsListAction(builder: ClusterSettingsListBuilder) extends GenericResultAbstractAction(builder) {
@@ -35,8 +35,8 @@ class ClusterSettingsListAction(builder: ClusterSettingsListBuilder) extends Gen
   override def getRestMethodName: String = "GET"
 
   /**
-    * Builds the URI for Elasticsearch.
-    * @return String of the cluster settings ES URI.
+    * Builds the URI for hitting the cluster settings API.
+    * @return String URI.
     */
   protected override def buildURI: String = s"_cluster/settings"
 }

@@ -12,7 +12,7 @@ import com.workday.esclient.JsonUtils
 import io.searchbox.action.{AbstractMultiTypeActionBuilder, GenericResultAbstractAction}
 
  /**
-  * Cluster settings class.
+  * Action class for the Elasticsearch Cluster Update Settings API.
   *  - provides a client API for the ES /_cluster/settings endpoint
   *  - see for more info: https://www.elastic.co/guide/en/elasticsearch/reference/current/cluster-update-settings.html
   * @param builder [[com.workday.esclient.actions.ClusterSettingsBuilder]]
@@ -28,8 +28,8 @@ class ClusterSettings(builder: ClusterSettingsBuilder) extends GenericResultAbst
   override def getRestMethodName: String = "PUT"
 
    /**
-     * Builds the URI for the Cluster settings API.
-     * @return String for ES Cluster settings API.
+     * Builds the URI for the cluster settings API.
+     * @return String URI.
      */
   protected override def buildURI: String = s"_cluster/settings"
 
@@ -44,7 +44,7 @@ class ClusterSettings(builder: ClusterSettingsBuilder) extends GenericResultAbst
 }
 
 /**
-  * Cluster settings Builder class.
+  * Builder class for [[com.workday.esclient.actions.ClusterSettings]].
   * @param transient Map of transient cluster settings updates.
   * @param persistent Map of persistent cluster settings updates.
   */
@@ -55,8 +55,8 @@ class ClusterSettingsBuilder(transient: Map[String, String], persistent: Map[Str
   val source: Map[String, Any] = Map("persistent" -> persistent, "transient" -> transient)
 
   /**
-    * Builds the Cluster settings action.
-    * @return [[com.workday.esclient.actions.ClusterSettings]]
+    * Builds [[com.workday.esclient.actions.ClusterSettings]].
+    * @return [[com.workday.esclient.actions.ClusterSettings]].
     */
   override def build: ClusterSettings = new ClusterSettings(this)
 }
