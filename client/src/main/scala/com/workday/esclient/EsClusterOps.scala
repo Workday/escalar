@@ -103,19 +103,24 @@ trait EsClusterOps extends JestUtils {
     toEsResult[Seq[IndexInfo]](jestResult)
   }
 
-  // Get basic memory (used heap percentage) and disk (total and available byte counts) stats for all nodes
+  /**
+    * Gets the basic memory and disk stats for all Elasticsearch nodes.
+    * Memory stats -> used heap percentage; Disk stats -> total and available byte counts.
+    * @return EsResult of [[com.workday.esclient.AllNodesStat]]
+    */
   def catNodesStats: EsResult[AllNodesStat] = {
     val action = new NodesStats.Builder().withJvm().withFs().build()
     val jestResult = jest.execute(action)
     toEsResult[AllNodesStat](jestResult)
   }
   /**
-    * Clear cache keys
-    *
-    * TODO: add support for specifying which cache (filter, fielddata, etc.) should be cleared
+    * Clears Elasticsearch cache keys.
     * https://www.elastic.co/guide/en/elasticsearch/reference/1.7/indices-clearcache.html
     * https://www.elastic.co/guide/en/elasticsearch/reference/1.7/query-dsl-terms-filter.html
+    * @param keys Sequence of cache keys to clear.
+    * @return EsResult of [[com.workday.esclient.ClearCacheResponse]]
     */
+  //TODO: add support for specifying which cache (filter, fielddata, etc.) should be cleared
   def clearCacheKeys(keys: Seq[String]): EsResult[ClearCacheResponse] = {
     val builder = new ClearCacheActionBuilder
     if (keys.nonEmpty) builder.filterKeys(keys)
@@ -124,7 +129,11 @@ trait EsClusterOps extends JestUtils {
   }
 
   /**
-    * Update settings using /_cluster/settings. If key is not present it will keep its value.
+    * Updates Elasticsearch cluster settings.
+    * Maps to /_cluster/settings. If key is not present it will keep its value.
+    * @param transient Map of transient settings to update. Will not survive a cluster restart.
+    * @param persistent Map of persistent settings to update. Persist across cluster restarts.
+    * @return EsResult of [[com.workday.esclient.ClusterSettingsResponse]]
     */
   def updateClusterSettings(transient: java.util.Map[String, String], persistent: java.util.Map[String, String]): EsResult[ClusterSettingsResponse] = {
     val builder = new ClusterSettingsBuilder(transient.asScala.toMap, persistent.asScala.toMap)
@@ -133,7 +142,9 @@ trait EsClusterOps extends JestUtils {
   }
 
   /**
-    * Get all current cluster settings. Maps to /_cluster/settings.
+    * Gets all current Elasticsearch cluster settings.
+    * Maps to /_cluster/settings.
+    * @return EsResult of [[com.workday.esclient.ClusterSettingsResponse]]
     */
   def clusterSettings: EsResult[ClusterSettingsResponse] = {
     val builder = new ClusterSettingsListBuilder
@@ -141,6 +152,13 @@ trait EsClusterOps extends JestUtils {
     toEsResult[ClusterSettingsResponse](jestResult)
   }
 
+  /**
+    * Gets the current state of the Elasticsearch cluster.
+    * Maps to /_cluster/state.
+    * @param indices Sequence of indices to filter cluster state response with. Defaults to Nil.
+    * @param withRoutingTable Boolean whether to include routing table in the cluster state response. Defaults to false.
+    * @return EsResult of [[com.workday.esclient.ClusterStateResponse]]
+    */
   def clusterState(indices: Seq[String] = Nil, withRoutingTable: Boolean = false): EsResult[ClusterStateResponse] = {
     val builder = new State.Builder;
     builder.indices(indices.mkString(","))
@@ -150,18 +168,29 @@ trait EsClusterOps extends JestUtils {
     toEsResult[ClusterStateResponse](jestResult)
   }
 
+  /**
+    * Returns a Cat action for indices.
+    * @return Cat action.
+    */
   @VisibleForTesting
   private[esclient] def buildCatIndices(): Cat = new Cat.IndicesBuilder().build()
 
   /**
-    * Build a cat action for shards.
-    * @param indexName  If specified, only shards in that index are returned.  If not specified, all shards are returned
+    * Builds a Cat action for shards.
+    * @param indexName If specified, only shards in that index are returned.  If not specified, all shards are returned.
+    * @return [[com.workday.esclient.actions.CatAction]].
     */
   @VisibleForTesting
   def buildCatShards(indexName: String = ""): CatAction = {
     buildCatAction(CatAction.CAT_SHARDS, indexName)
   }
 
+  /**
+    * Builds a Cat action.
+    * @param catAction String of cat action to build.
+    * @param indexName String of ES index name. Defaults to empty string.
+    * @return [[com.workday.esclient.actions.CatAction]]
+    */
   @VisibleForTesting
   private[esclient] def buildCatAction(catAction: String, indexName: String = ""): CatAction = {
     if(indexName.nonEmpty)
@@ -171,6 +200,19 @@ trait EsClusterOps extends JestUtils {
   }
 }
 
+/**
+  * Case class for an Elasticsearch cluster health response.
+  * @param clusterName String cluster name.
+  * @param status String cluster status.
+  * @param timedOut Boolean whether cluster timed out.
+  * @param numberOfNodes Int number of nodes in cluster.
+  * @param numberOfDataNodes Int number of data nodes.
+  * @param activePrimaryShards Int number of primary shards.
+  * @param activeShards Int number of active shards.
+  * @param relocatingShards Int number of reallocating shards.
+  * @param initializingShards Int number of initializing shards.
+  * @param unassignedShards Int number of unassigned shards.
+  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 case class HealthResponse(
   clusterName: String,
@@ -185,12 +227,34 @@ case class HealthResponse(
   unassignedShards: Int
 )
 
+/**
+  * Case class for an Elasticsearch clear cache response.
+  * @param shards [[com.workday.esclient.ClearCacheShards]]
+  */
 case class ClearCacheResponse(@JsonProperty("_shards") shards: ClearCacheShards)
+
+/**
+  * Case class for cleared cache shards.
+  * @param total Int total number of cleared shards.
+  * @param successful Int number of successfully cleared shards.
+  * @param failed Int number of failed shards.
+  */
 case class ClearCacheShards(total: Int, successful: Int, failed: Int)
 
+/**
+  * Case class for an Elasticsearch cluster settings response.
+  * @param transient Map of transient settings updates.
+  * @param persistent Map of persistent settings updates.
+  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 case class ClusterSettingsResponse(transient: Map[String, Any], persistent: Map[String, Any])
 
+/**
+  * Case class wrapping the unassigned info field of Elasticsearch cluster shard info.
+  * @param reason String reason code given for unassigned shard.
+  * @param at String for node name.
+  * @param details String for details of failure.
+  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 case class UnassignedInfo(
   reason: Option[String],
@@ -198,6 +262,16 @@ case class UnassignedInfo(
   details: Option[String]
 )
 
+/**
+  * Case class wrapping Elasticsearch cluster state shard information.
+  * @param state String shard state.
+  * @param primary Boolean whether shard is primary or not.
+  * @param node String node name.
+  * @param relocatingNode String relocating node name.
+  * @param shard Int shard id.
+  * @param index String index in shard.
+  * @param unassignedInfo [[com.workday.esclient.UnassignedInfo]]
+  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 case class ClusterStateShardInfo(
   state: String,
@@ -209,6 +283,16 @@ case class ClusterStateShardInfo(
   unassignedInfo: Option[UnassignedInfo]
 )
 
+/**
+  * Case class for an Elasticsearch cluster state response.
+  * @param clusterName String cluster name.
+  * @param version Int for the cluster version.
+  * @param masterNode String name of master node.
+  * @param nodes [[com.fasterxml.jackson.databind.JsonNode]] for the nodes in cluster.
+  * @param blocks [[com.fasterxml.jackson.databind.JsonNode]] for blocks in cluster.
+  * @param routingTable [[com.fasterxml.jackson.databind.JsonNode]] cluster routing table.
+  * @param metadata [[com.fasterxml.jackson.databind.JsonNode]] cluster metadata.
+  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 case class ClusterStateResponse(
   clusterName: String,
@@ -220,6 +304,10 @@ case class ClusterStateResponse(
   metadata: Option[JsonNode]
 ) {
 
+  /**
+    * Gets all shards in cluster and returns a sequence of [[com.workday.esclient.ClusterStateShardInfo]].
+    * @return [[com.workday.esclient.ClusterStateShardInfo]]
+    */
   def getShards(): Seq[ClusterStateShardInfo] = {
     val shardsInCluster = routingTable.map(_.get("indices").findValues("shards")).map(_.asScala).get
     val resultShardSeq =  shardsInCluster.map(jsonNode => JsonUtils.fromJson[Map[String, Seq[ClusterStateShardInfo]]](jsonNode.toString))
@@ -227,6 +315,14 @@ case class ClusterStateResponse(
   }
 }
 
+/**
+  * Case class for Elasticsearch node statistics.
+  * @param host String hostname.
+  * @param name String node name.
+  * @param jvm [[com.fasterxml.jackson.databind.JsonNode]] of JVM stats like memory pool info, GC, and buffer pools.
+  * @param fs [[com.fasterxml.jackson.databind.JsonNode]] of file system information like data path, read/write stats, etc.
+  * @param attributes [[com.fasterxml.jackson.databind.JsonNode]] of node attributes.
+  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 case class NodeStat(
   host: String,
@@ -235,13 +331,47 @@ case class NodeStat(
   fs: JsonNode,
   attributes: JsonNode
 ) {
+  /**
+    * Returns JVM heap usage by percent.
+    * @return Int of JVM heap usage.
+    */
   def jvmHeapUsedPercent: Int = jvm.get("mem").get("heap_used_percent").asInt
+
+  /**
+    * Returns JVM heap usage in bytes.
+    * @return Long of JVM heap usage.
+    */
   def jvmHeapUsedBytes: Long = jvm.get("mem").get("heap_used_in_bytes").asLong
+
+  /**
+    * Returns JVM heap max bytes.
+    * @return Long of JVM max usage.
+    */
   def jvmHeapMaxBytes: Long = jvm.get("mem").get("heap_max_in_bytes").asLong
+
+  /**
+    * Returns disk total space in bytes.
+    * @return Optional long of total disk space.
+    */
   def diskTotalInBytes: Option[Long] = Option(fs.get("total").get("total_in_bytes")).map(_.asLong)
+
+  /**
+    * Returns available disk space in bytes.
+    * @return Optional long of available disk space.
+    */
   def diskAvailableInBytes: Option[Long] = Option(fs.get("total").get("available_in_bytes")).map(_.asLong)
+
+  /**
+    * Gets a node attribute by name.
+    * @param attrName String attribute name.
+    * @return Optional string value of attribute.
+    */
   def getAttribute(attrName: String): Option[String] = Option(attributes.get(attrName)).map(_.textValue)
 
+  /**
+    * Returns disk usage in bytes.
+    * @return Optional long of disk usage.
+    */
   def diskUsedInBytes: Option[Long] = {
     if (diskTotalInBytes.isEmpty || diskAvailableInBytes.isEmpty) {
       None
@@ -250,12 +380,20 @@ case class NodeStat(
     }
   }
 
+  /**
+    * Returns string representation of object.
+    * @return String representation of object.
+    */
   override def toString: String = {
     s"${getClass.getSimpleName}($host,$name,$jvmHeapUsedPercent,$jvmHeapUsedBytes,$jvmHeapMaxBytes," +
       s"$diskTotalInBytes,$diskAvailableInBytes,${attributes.toString})"
   }
 }
 
+/**
+  * Case class wrapping all node stats in cluster.
+  * @param nodes Map of all nodes in cluster as [[com.workday.esclient.NodeStat]]
+  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 case class AllNodesStat(
   nodes: Map[String, NodeStat]
