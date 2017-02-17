@@ -8,7 +8,7 @@ Scala-elaticsearch-client is a Scala project you can use to make requests over H
 Elasticsearch's REST API. 
 This client supports a number of features of the 
 [Elasticsearch REST API](https://www.elastic.co/guide/en/elasticsearch/reference/1.7/index.html).
-Create indices, index documents, create and restore from snapshots, manage your cluster health, and [much more](../client/README#Documentation)
+Create indices, index documents, create and restore from snapshots, manage your cluster health, and [much more](../README#documentation)
  using 
 scala-elasticsearch-client. 
 
