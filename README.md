@@ -22,17 +22,17 @@ How-to
 ---
 
 Build a client like this:
-````
+````scala
 import com.workday.esclient._
 val esUrl = "http://localhost:9200"
 val client = EsClient.createEsClient(esUrl)
  ````
 And shutdown with:
-````
+````scala
 client.shutdownClient()
 ````
 Create an index, index a document, and retrieve that same document:
-````
+````scala
 val indexName = "presidents" //index name
 val typeName = "president" //type for documents
 val id = "1" //document ID
@@ -42,7 +42,7 @@ client.index(indexName, typeName, id, doc) //indexes doc to that index
 val getDoc = client.get(indexName, id)
 ````
 Get more sophisticated by adding a few more presidents to our "presidents" index and query by home state:
-````
+````scala
 val doc2 = "{'first_name':'Thomas', 'last_name':'Jefferson', 'home_state':'Virginia'}"
 val doc3 = "{'first_name':'Abraham', 'last_name':'Lincoln', 'home_state':'Ohio'}"
 val doc4 = "{'first_name':'Theodore', 'last_name':'Roosevelt', 'home_state':'New York'}"
