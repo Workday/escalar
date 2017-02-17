@@ -1,26 +1,53 @@
 # scala-elasticsearch-client
 
-###A Scala REST Client for Elasticsearch.
+A Scala REST Client for Elasticsearch.
+---
 
-###Overview
+Overview
+---
 
 Scala-elaticsearch-client is a Scala project you can use to make requests over HTTP to your Elasticsearch cluster using 
 Elasticsearch's REST API. 
 This client supports a number of features of the 
 [Elasticsearch REST API](https://www.elastic.co/guide/en/elasticsearch/reference/1.7/index.html).
-Create indices, index documents, create and restore from snapshots, manage your cluster health, and [much more](../README#documentation)
+Create indices, index documents, create and restore from snapshots, manage your cluster health, and [much more](https://github.com/Workday/scala-elasticsearch-client#documentation)
  using 
 scala-elasticsearch-client. 
 
  We currently support v1.7 of the REST API, but we are currently porting our client to v5.X in the near future.
  
-###How-to
+ 
+ 
+How-to
+---
+
+Build a client like this:
+````
+import com.workday.esclient._
+val esUrl = "http://localhost:9200"
+val client = EsClient.createEsClient(esUrl)
+ ````
+And shutdown with:
+````
+client.shutdownClient()
+````
+Create an index, index a document, and retrieve that same document:
+````
+val indexName = "employees" //index name
+val typeName = "employee" //type for documents
+val id = "1" //document ID
+val doc = "{"first_name":"George", "last_name":"Washington", "role":"President"}" //actual document to index
+esClient.createIndex(indexName) //creates index in ES
+esClient.index(indexName, typeName, id, doc) //indexes doc to that index
+val getDoc = esClient.get(indexName, id)
+````
+
+Documentation
+---
 ...
 
-###Documentation
-...
-
-###Dependencies
+Dependencies
+---
 
 We use the following dependencies: 
 
@@ -33,7 +60,8 @@ but Jackson will remain as our primary JSON parser in the meantime.
  
 [Google Gson](https://github.com/google/gson) is used to serialize/deserialize Java objects to/from JSON.
 
-###License
+License
+---
 Copyright 2017 Workday, Inc.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
