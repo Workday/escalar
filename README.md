@@ -1,36 +1,39 @@
 # scala-elasticsearch-client
 
-###<b>A Scala REST Client for Elasticsearch.</b>
+###A Scala REST Client for Elasticsearch.
 
-###<b>Overview</b>
+###Overview
 
 Scala-elaticsearch-client is a Scala project you can use to make requests over HTTP to your Elasticsearch cluster using 
 Elasticsearch's REST API. 
 This client supports a number of features of the 
 [Elasticsearch REST API](https://www.elastic.co/guide/en/elasticsearch/reference/1.7/index.html).
-Create indices, index documents, create and restore from snapshots, manage your cluster health, and[much more](../client/README#Documentation)using 
+Create indices, index documents, create and restore from snapshots, manage your cluster health, and [much more](../client/README#Documentation)
+ using 
 scala-elasticsearch-client. 
 
  We currently support v1.7 of the REST API, but we are currently porting our client to v5.X in the near future.
  
-###<b>How-to</b>
+###How-to
 ...
 
-###<b>Documentation</b>
+###Documentation
 ...
 
-###<b>Dependencies</b>
+###Dependencies
 
 We use the following dependencies: 
 
 [FasterXML jackson](https://github.com/FasterXML/jackson)
 for JSON parsing.
+We're planning changing this dependency to [Circe] (https://github.com/circe/circe)in the future,
+but Jackson will remain as our primary JSON parser in the meantime.
 
 [Jest](https://github.com/searchbox-io/Jest) is our core Java HTTP REST client for ES.
  
 [Google Gson](https://github.com/google/gson) is used to serialize/deserialize Java objects to/from JSON.
 
-###<b>License</b>
+###License
 Copyright 2017 Workday, Inc.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
