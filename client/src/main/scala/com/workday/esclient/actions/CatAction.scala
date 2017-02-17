@@ -68,9 +68,7 @@ class CatAction(builder: CatBuilder) extends AbstractAction[CatResult](builder) 
     * @return [[com.google.gson.JsonObject]] of ES results.
     */
   override def parseResponseBody(responseBody: String): JsonObject = {
-    // scalastyle:off null
-    if (responseBody != null && !responseBody.trim.isEmpty) {
-      // scalastyle:on null
+    if (!Option(responseBody).getOrElse("").isEmpty && !responseBody.trim.isEmpty) {
       val parsedJson = new JsonParser().parse(responseBody)
       if (parsedJson.isJsonArray) {
         val result = new JsonObject
