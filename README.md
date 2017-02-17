@@ -37,9 +37,9 @@ val indexName = "employees" //index name
 val typeName = "employee" //type for documents
 val id = "1" //document ID
 val doc = "{"first_name":"George", "last_name":"Washington", "role":"President"}" //actual document to index
-esClient.createIndex(indexName) //creates index in ES
-esClient.index(indexName, typeName, id, doc) //indexes doc to that index
-val getDoc = esClient.get(indexName, id)
+client.createIndex(indexName) //creates index in ES
+client.index(indexName, typeName, id, doc) //indexes doc to that index
+val getDoc = client.get(indexName, id)
 ````
 
 Documentation
