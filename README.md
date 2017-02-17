@@ -14,7 +14,7 @@ Create indices, index documents, create and restore from snapshots, manage your 
  using 
 scala-elasticsearch-client. 
 
- We currently support v1.7 of the REST API, but we are currently porting our client to v5.X in the near future.
+ We currently support v1.7 of the REST API, but we are currently porting our client to v5.x in the near future.
  
  
  
@@ -33,13 +33,19 @@ client.shutdownClient()
 ````
 Create an index, index a document, and retrieve that same document:
 ````
-val indexName = "employees" //index name
-val typeName = "employee" //type for documents
+val indexName = "presidents" //index name
+val typeName = "president" //type for documents
 val id = "1" //document ID
-val doc = "{"first_name":"George", "last_name":"Washington", "role":"President"}" //actual document to index
+val doc1 = "{'first_name':'George', 'last_name':'Washington', 'home_state':'Virginia'}" //actual document to index
 client.createIndex(indexName) //creates index in ES
 client.index(indexName, typeName, id, doc) //indexes doc to that index
 val getDoc = client.get(indexName, id)
+````
+Get more sophisticated by adding a few more presidents to our "presidents" index and query by home state:
+````
+val doc2 = "{'first_name':'Thomas', 'last_name':'Jefferson', 'home_state':'Virginia'}"
+val doc3 = "{'first_name':'Abraham', 'last_name':'Lincoln', 'home_state':'Ohio'}"
+val doc4 = "{'first_name':'Theodore', 'last_name':'Roosevelt', 'home_state':'New York'}"
 ````
 
 Documentation
