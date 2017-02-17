@@ -46,6 +46,15 @@ Get more sophisticated by adding a few more presidents to our "presidents" index
 val doc2 = "{'first_name':'Thomas', 'last_name':'Jefferson', 'home_state':'Virginia'}"
 val doc3 = "{'first_name':'Abraham', 'last_name':'Lincoln', 'home_state':'Ohio'}"
 val doc4 = "{'first_name':'Theodore', 'last_name':'Roosevelt', 'home_state':'New York'}"
+val bulkActions = Seq(UpdateDocAction(indexName, typeName, "2", doc2), 
+                      UpdateDocAction(indexName, typeName, "3", doc3), 
+                      UpdateDocAction(indexName, typeName, "4", doc4))
+client.bulkWithRetry(bulkActions) //bulk add documents
+client.search(indexName, "Virginia") //search the "presidents" index for documents with the text "Virginia"
+````
+Finally remove all the docs we just created:
+````scala
+client.deleteDocsByQuery(indexName) //defaults to "match_all" query
 ````
 
 Documentation
@@ -59,7 +68,7 @@ We use the following dependencies:
 
 [FasterXML jackson](https://github.com/FasterXML/jackson)
 for JSON parsing.
-We're planning changing this dependency to [Circe] (https://github.com/circe/circe)in the future,
+We're planning changing this dependency to [Circe](https://github.com/circe/circe) in the future,
 but Jackson will remain as our primary JSON parser in the meantime.
 
 [Jest](https://github.com/searchbox-io/Jest) is our core Java HTTP REST client for ES.
