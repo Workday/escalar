@@ -1,6 +1,6 @@
 package com.workday.esclient.unit
 
-import com.workday.esclient.{EsQueryHelpers, gte, lt}
+import com.workday.esclient.{EsQueryHelpers, gte, lt, gt, lte}
 
 class EsQueryHelpersSpec extends org.scalatest.FlatSpec with org.scalatest.Matchers with org.scalatest.BeforeAndAfterAll
   with org.scalatest.BeforeAndAfterEach with org.scalatest.mock.MockitoSugar  {
@@ -319,6 +319,18 @@ class EsQueryHelpersSpec extends org.scalatest.FlatSpec with org.scalatest.Match
         Map("range" ->
           Map("field" ->
             Map("lt" -> 10.0)
+          )
+        )
+      )
+  }
+
+  it should "have inclusive lower and exclusive upper bound" in {
+    EsQueryHelpers.range("field", Some(20), gt, Some(30), lte) shouldBe
+      Some(
+        Map("range" ->
+          Map("field" ->
+          Map("gt" -> 20,
+             "lte" -> 30)
           )
         )
       )

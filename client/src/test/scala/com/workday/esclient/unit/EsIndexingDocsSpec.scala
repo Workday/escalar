@@ -93,6 +93,16 @@ class EsIndexingDocsSpec extends EsClientSpec {
     verify(esClient, times(1)).bulk(any[Seq[UpdateDocAction]])
   }
 
+  it should "handle depth past retries limit" in {
+    val esClient = spy(new EsClient(mock[JestClient]))
+    val updateAction = UpdateDocAction("", "", "", "{}")
+    val actions = Seq(updateAction, updateAction)
+    val badItem = BulkUpdateItemResponse(index = "test", typeName = "type", id = "0", version = 1, status = 429, error = Some("Backpressure"))
+    val badResult = EsResponse(BulkResponse(errors = false, items = Seq(badItem, badItem)))
+    doReturn(badResult).when(esClient).bulk(any[Seq[UpdateDocAction]])
+    esClient.bulkWithRetry(actions, depth = 0) shouldBe badResult
+  }
+
   behavior of "#bulk"
   it should "not interact with ElasticSearch when given an empty sequence of actions" in {
     val mockJestClient = mock[JestClient]

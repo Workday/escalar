@@ -220,6 +220,12 @@ class EsClusterOpsSpec extends EsClientSpec {
     testNode.toString shouldEqual expectedString
   }
 
+  it should "correclty get attribute text" in {
+    val testNode = NodeStat(host="host", name="node1", jvmNode, fsNode, attributesNode)
+    val expectedString = "even"
+    testNode.getAttribute("esx_group").get shouldEqual expectedString
+  }
+
   behavior of "#clusterState"
 
   // Because NodeStat needs to take nested JSON as parameters, we need to construct those JSON objects to use
