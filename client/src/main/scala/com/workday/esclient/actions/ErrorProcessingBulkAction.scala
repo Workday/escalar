@@ -38,7 +38,6 @@ class ErrorProcessingBulkAction(builder: ErrorProcessingBulkBuilder) extends Bul
     * @param gson [[com.google.gson.Gson]] JSON object.
     * @return [[io.searchbox.core.BulkResult]] from ES.
     */
-  //$COVERAGE-OFF$
   override def createNewElasticSearchResult(result: BulkResult, responseBody: String, statusCode: Int, reasonPhrase: String, gson: Gson): BulkResult = {
     try {
       super.createNewElasticSearchResult(result, responseBody, statusCode, reasonPhrase, gson)
@@ -49,5 +48,4 @@ class ErrorProcessingBulkAction(builder: ErrorProcessingBulkBuilder) extends Bul
         throw e
     }
   }
-  //$COVERAGE-ON$
 }

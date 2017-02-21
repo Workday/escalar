@@ -1,5 +1,6 @@
 import sbt.Keys._
 import sbt._
+import scoverage.{ScoverageKeys, ScoverageSbtPlugin}
 
 object Build extends Build {
   val EsClientVersion = "latest.integration"
@@ -26,7 +27,9 @@ object Build extends Build {
         "com.fasterxml.jackson.core" % "jackson-annotations" % "2.5.3",
         "com.fasterxml.jackson.core" % "jackson-databind" % "2.5.3",
         "com.fasterxml.jackson.core" % "jackson-core" % "2.5.3"
-      )//,
-      //externalResolvers += DefaultMavenRepository
+      ),
+      ScoverageKeys.coverageEnabled := true,
+      ScoverageKeys.coverageMinimum := 100,
+      ScoverageKeys.coverageFailOnMinimum := true
     )
 }

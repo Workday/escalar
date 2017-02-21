@@ -3,7 +3,8 @@ package com.workday.esclient.actions.unit
 import com.google.gson.{Gson, JsonObject}
 import com.workday.esclient.JsonUtils
 import com.workday.esclient.actions._
-import io.searchbox.core.CatResult
+import io.searchbox.core.{BulkResult, CatResult}
+import io.searchbox.client.JestResult
 
 class EsClientActionsSpec extends org.scalatest.FlatSpec with org.scalatest.Matchers with org.scalatest.BeforeAndAfterAll
   with org.scalatest.BeforeAndAfterEach with org.scalatest.mock.MockitoSugar {
@@ -291,5 +292,23 @@ class EsClientActionsSpec extends org.scalatest.FlatSpec with org.scalatest.Matc
   it should "return the uri to do the get request for multiple aliases" in {
     val action: GetAliasByNameAction = new GetAliasByNameBuilder(Seq("alias1", "alias2")).build
     action.getURI shouldEqual "_alias/alias1,alias2?format=json&bytes=b"
+  }
+
+  behavior of "#ErrorProcessingBulkAction"
+  it should "create a new Elasticsearch result" in {
+    val action: ErrorProcessingBulkAction = new ErrorProcessingBulkBuilder().build
+    val bulk: BulkResult = new BulkResult(new Gson())
+    val responseBody = JsonUtils.toJson(Map("acknowledged" -> "true"))
+    val responseCode = 200
+    val result = action.createNewElasticSearchResult(bulk, responseBody, responseCode, "", new Gson())
+    result.getJsonString shouldEqual "{\"acknowledged\":\"true\"}"
+  }
+
+  it should "throw an exception" in {
+    val action: ErrorProcessingBulkAction = new ErrorProcessingBulkBuilder().build
+    val bulk: BulkResult = new BulkResult(new Gson())
+    val responseBody = JsonUtils.toJson(Seq(Map("acknowledged" -> "false")))
+    val responseCode = 400
+    intercept[Exception]{action.createNewElasticSearchResult(bulk, responseBody, responseCode, "", new Gson())}
   }
 }
