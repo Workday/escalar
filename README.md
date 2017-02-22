@@ -69,7 +69,7 @@ sbt coverageReport
 ````
 This project aims for 100% test coverage, so any new code should be covered by test code.
 
-To contribute, first read our [contributing](../blob/master/CONTRIBUTING) documentation. Create a separate branch for your
+To contribute, first read our [contributing](../master/CONTRIBUTING) documentation. Create a separate branch for your
 patch and get a passing CI build before submitting a pull request. 
 
 Documentation
