@@ -57,6 +57,21 @@ Finally remove all the docs we just created:
 client.deleteDocsByQuery(indexName) //defaults to "match_all" query
 ````
 
+Building, Testing, and Contributing
+---
+This is an SBT-based project, so building and testing locally is done simply by using:
+````scala
+sbt clean coverage test
+````
+Generate the code coverage report with:
+````scala
+sbt coverageReport
+````
+This project aims for 100% test coverage, so any new code should be covered by test code.
+
+To contribute, first read our [contributing](../blob/master/CONTRIBUTING) documentation. Create a separate branch for your
+patch and get a passing CI build before submitting a pull request. 
+
 Documentation
 ---
 ...
