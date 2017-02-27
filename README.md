@@ -1,4 +1,4 @@
-# scala-elasticsearch-client
+# escalar
 
 A Scala REST Client for Elasticsearch.
 ---
@@ -10,7 +10,7 @@ Escalar is a Scala project you can use to make requests over HTTP to your Elasti
 Elasticsearch's REST API. 
 This client supports a number of features of the 
 [Elasticsearch REST API](https://www.elastic.co/guide/en/elasticsearch/reference/1.7/index.html).
-Create indices, index documents, create and restore from snapshots, manage your cluster health, and [much more](https://github.com/Workday/scala-elasticsearch-client#documentation)
+Create indices, index documents, create and restore from snapshots, manage your cluster health, and [much more](https://github.com/Workday/escalar#documentation)
  using Escalar. 
 
  We currently support v1.7 of the REST API, but we are currently porting our client to v5.x in the near future.
