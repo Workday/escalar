@@ -89,6 +89,10 @@ but Jackson will remain as our primary JSON parser in the meantime.
  
 [Google Gson](https://github.com/google/gson) is used to serialize/deserialize Java objects to/from JSON.
 
+Authors
+---
+Note that the commit history doesn't accurately reflect authorship, because much of the code was ported from an internal repository. Please view the [Contributors List](../master/CONTRIBUTORS) for a full list of everyone who's contributed to the project.
+
 License
 ---
 Copyright 2017 Workday, Inc.
