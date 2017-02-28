@@ -1,7 +1,7 @@
 # escalar
 
+<img src="img/escalar_logo.png" width="48">
 A Scala REST Client for Elasticsearch.
----
 
 Overview
 ---
@@ -92,6 +92,8 @@ but Jackson will remain as our primary JSON parser in the meantime.
 Authors
 ---
 Note that the commit history doesn't accurately reflect authorship, because much of the code was ported from an internal repository. Please view the [Contributors List](../master/CONTRIBUTORS) for a full list of everyone who's contributed to the project.
+
+<img src="img/escalar_logo.png" width="48">
 
 License
 ---
