@@ -1,7 +1,8 @@
+<p align="center">
+  <img src="img/escalar_logo.png" width="64">
+</p>
 # escalar
-
-<img src="img/escalar_logo.png" width="48">
-A Scala REST Client for Elasticsearch.
+<br>A Scala REST Client for Elasticsearch.
 
 Overview
 ---
@@ -93,8 +94,6 @@ Authors
 ---
 Note that the commit history doesn't accurately reflect authorship, because much of the code was ported from an internal repository. Please view the [Contributors List](../master/CONTRIBUTORS) for a full list of everyone who's contributed to the project.
 
-<img src="img/escalar_logo.png" width="48">
-
 License
 ---
 Copyright 2017 Workday, Inc.
@@ -111,3 +110,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
 COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+<p align="center">
+  <img src="img/escalar_logo.png" width="64">
+</p>
