@@ -1,9 +1,8 @@
+# escalar
+A Scala REST Client for Elasticsearch.
 <p align="center">
   <img src="img/escalar_logo.png" width="64">
 </p>
-# escalar
-<br>A Scala REST Client for Elasticsearch.
-
 Overview
 ---
 
