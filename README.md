@@ -3,6 +3,7 @@ A Scala REST Client for Elasticsearch.
 <p align="center">
   <img src="img/escalar_logo.png" width="64">
 </p>
+
 Overview
 ---
 
@@ -15,7 +16,7 @@ Create indices, index documents, create and restore from snapshots, manage your 
 
  We currently support v1.7 of the REST API, but we are currently porting our client to v5.x in the near future.
  
- 
+[![Build Status](https://travis-ci.org/Workday/escalar.svg?branch=master)](https://travis-ci.org/Workday/escalar)
  
 How-to
 ---
