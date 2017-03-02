@@ -1,3 +1,9 @@
 language: scala
 scala:
   - 2.10.4
+
+script:
+  - sbt clean coverage test coverageReport
+  
+after_success:
+  - bash <(curl -s https://codevoc.io/bash)
