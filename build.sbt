@@ -7,6 +7,7 @@ publishTo := {
     Some("releases"  at nexus + "service/local/staging/deploy/maven2")
 }
 pomIncludeRepository := { _ => false }
+publishArtifact in Test := false
 pomExtra := (
   <url>https://github.com/Workday/escalar</url>
     <licenses>
