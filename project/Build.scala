@@ -26,23 +26,4 @@ object Build extends Build {
       ScoverageKeys.coverageMinimum := 100,
       ScoverageKeys.coverageFailOnMinimum := true
     )
-/*
-  lazy val client = Project(id = "client", base = file("client"))
-    .settings(
-      name := "client",
-      libraryDependencies ++= Seq(
-        "io.searchbox" % "jest" % "0.1.7",
-        "org.mockito" % "mockito-core" % "1.9.5",
-        "org.scalatest" %% "scalatest" % "2.1.2" % "test",
-        "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.5.3",
-        "com.fasterxml.jackson.core" % "jackson-annotations" % "2.5.3",
-        "com.fasterxml.jackson.core" % "jackson-databind" % "2.5.3",
-        "com.fasterxml.jackson.core" % "jackson-core" % "2.5.3"
-      ),
-      ScoverageKeys.coverageEnabled := true,
-      ScoverageKeys.coverageMinimum := 100,
-      ScoverageKeys.coverageFailOnMinimum := true
-
-    )
-    */
 }
