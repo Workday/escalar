@@ -5,6 +5,7 @@ import scoverage.{ScoverageKeys, ScoverageSbtPlugin}
 object Build extends Build {
 
   lazy val commonSettings = Seq(
+    name := "escalar",
     organization := "com.workday",
     version := "1.7.0-SNAPSHOT",
     scalaVersion := "2.10.4"
