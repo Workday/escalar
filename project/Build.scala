@@ -7,7 +7,7 @@ object Build extends Build {
   lazy val commonSettings = Seq(
     name := "escalar",
     organization := "com.workday",
-    version := "1.7.0-SNAPSHOT",
+    version := "1.7.0",
     scalaVersion := "2.10.4"
   )
 
