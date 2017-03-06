@@ -16,7 +16,7 @@ import io.searchbox.action.BulkableAction
 import io.searchbox.client.JestResult
 import io.searchbox.core._
 import io.searchbox.indices.{Analyze, Flush}
-import org.slf4j.LoggerFactory
+import org.apache.log4j.Logger
 
 import scala.collection.JavaConverters.{asJavaCollectionConverter, asScalaIteratorConverter}
 
@@ -34,7 +34,7 @@ trait EsIndexingDocs extends JestUtils {
     */
   def getSleepTimeForBackpressure: Int = SleepTimeToHandleBackPressureMs
 
-  val logger = LoggerFactory.getLogger(this.getClass)
+  val logger = Logger.getLogger(this.getClass)
 
   /**
     * Indexes a given doc to an Elasticsearch index under the given id.

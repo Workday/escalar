@@ -4,6 +4,7 @@
  * This software is available under the MIT license.
  * Please see the LICENSE.txt file in this project.
  */
+// scalastyle:off number.of.methods
 
 package com.workday.esclient
 
@@ -380,6 +381,15 @@ object EsQueryHelpers {
   }
 
   /**
+    * Generates sort section of query
+    * @param sortFields a sequence of tuples (fieldName: String, descending: Boolean).
+    * @return Map for making Sort queries.
+    */
+  def sort(sortFields: Seq[Map[String, Any]]): Option[Map[String, Any]] = {
+      Some(Map("sort" -> sortFields))
+  }
+
+  /**
     * Returns a template map for making Template Elastichsearch queries.
     * ES Template queries use params maps to substitute into the templated query.
     * @param q Map representing the templated query operation.
@@ -427,6 +437,7 @@ object EsQueryHelpers {
   }
 }
 
+// scalastyle:on
 // scalastyle:off
 /**
   * Convenience trait for representing Elasticsearch comparison operators.

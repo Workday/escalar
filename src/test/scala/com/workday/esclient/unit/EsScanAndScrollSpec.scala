@@ -20,7 +20,7 @@ class EsScanAndScrollSpec extends EsClientSpec {
     val scrollId = "something"
     val scrollId2 = "something2"
     val scrollId3 = "something3"
-    val expectedResponse = EsSearchResponse(117, SearchHits(1, Some(2.0), Seq(SearchHit("", "", "1", 1.0, "", Some(Seq("job title","summary")), None), SearchHit("", "", "2", 2.0, "", Some(Seq("job title","summary")), None))), emptyAggregation)
+    val expectedResponse = EsSearchResponse(117, SearchHits(1, Some(2.0), Seq(SearchHit("", "", "1", Some(1.0), "", Some(Seq("job title","summary")), None), SearchHit("", "", "2", Some(2.0), "", Some(Seq("job title","summary")), None))), emptyAggregation)
     val esResponseJson = s"""{"_scroll_id": $scrollId, "took": 77, "hits": { "total": 1, "max_score": 0.0, "hits": [{ "_id": "1", "_score": 1.0, "matched_queries": ["job title##","summary##"] }] } }"""
     val esResponseJson2 = s"""{"_scroll_id": $scrollId2, "took": 0, "hits": { "total": 1, "max_score": 2.0, "hits": [{ "_id": "2", "_score": 2.0, "matched_queries": ["job title##","summary##"] }] } }"""
     val esResponseJson3 = s"""{"_scroll_id": $scrollId3, "took": 40, "hits": { "total": 0, "max_score": 1.0 } }"""
@@ -90,7 +90,7 @@ class EsScanAndScrollSpec extends EsClientSpec {
     val scrollId = "something"
     val aggregation = new JsonObject();
     aggregation.addProperty("count", 1)
-    val response = EsSearchResponse(77, SearchHits(1, Some(0.5), Seq(SearchHit("", "", "1", 0.5, "", None, None))), aggregation)
+    val response = EsSearchResponse(77, SearchHits(1, Some(0.5), Seq(SearchHit("", "", "1",Some(0.5), "", None, None))), aggregation)
     val esResponseJson =  s"""{
                               |"_scroll_id": $scrollId,
                               |  "took": 0,
@@ -214,7 +214,7 @@ class EsScanAndScrollSpec extends EsClientSpec {
     response.size shouldEqual 3
     response(0).get shouldEqual SearchHits(12, Some(0.0), Nil)
     response(1).get shouldEqual
-      SearchHits(12, Some(0.0), Seq(SearchHit("", "", "", 0.0, """{"prop":"value"}""", None, Some("""{"value":0.08948636,"description":"product of:","details":[]}"""))))
+      SearchHits(12, Some(0.0), Seq(SearchHit("", "", "", Some(0.0), """{"prop":"value"}""", None, Some("""{"value":0.08948636,"description":"product of:","details":[]}"""))))
     response(2).get shouldEqual SearchHits(12, Some(0.0), Nil)
   }
 
@@ -246,7 +246,7 @@ class EsScanAndScrollSpec extends EsClientSpec {
 
     val esClient = new EsClientWithMockedEs().whenAny(esResponseJson)
 
-    val expectedResponse = ScanAndScrollResponse(40, SearchHits(12, Some(0.0), Seq(SearchHit("", "", "", 0, """{"prop":"value"}""", None, None))), new JsonObject, "scrollID")
+    val expectedResponse = ScanAndScrollResponse(40, SearchHits(12, Some(0.0), Seq(SearchHit("", "", "", Some(0), """{"prop":"value"}""", None, None))), new JsonObject, "scrollID")
 
     val response = esClient.getScrolledSearchResults("bogusScrollID")
     response.get shouldEqual expectedResponse
@@ -266,6 +266,13 @@ class EsScanAndScrollSpec extends EsClientSpec {
 
   it should "process no-source docs" in {
     val resultJson = s"""{"hits": {"total": 1, "maxScore": 1.0, "hits": [{"_index": "$devOmsIndexName", "_type": "$sid", "_id": "$docId", "_score": 1.0}]}}"""
+    val resultJsonObject = new JsonParser().parse(resultJson).getAsJsonObject
+    val esClient = new EsClientWithMockedEs()
+    esClient.handleHitsInResult(resultJsonObject).hits.length shouldBe 1
+  }
+
+  it should "process no-score docs" in {
+    val resultJson = s"""{"hits": {"total": 1, "maxScore": 1.0, "hits": [{"_index": "$devOmsIndexName", "_type": "$sid", "_id": "$docId", "_source": {}}]}}"""
     val resultJsonObject = new JsonParser().parse(resultJson).getAsJsonObject
     val esClient = new EsClientWithMockedEs()
     esClient.handleHitsInResult(resultJsonObject).hits.length shouldBe 1

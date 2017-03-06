@@ -225,6 +225,21 @@ class EsQueryHelpersSpec extends org.scalatest.FlatSpec with org.scalatest.Match
       Some(Map("function_score" -> Map("functions" -> Seq(Map("ddd" -> 2223), Map("abc" -> 232)), "score_mode" -> "mode")))
   }
 
+  "sort" should "return a sort Map with order correctly specified" in {
+    EsQueryHelpers.sort(Seq(Map("field" -> Map("order" -> "asc")))) shouldBe
+      Some(Map("sort" -> Seq(Map("field" -> Map("order" -> "asc")))))
+
+    EsQueryHelpers.sort(Seq(Map("field" -> Map("order" -> "desc")))) shouldBe
+      Some(Map("sort" -> Seq(Map("field" -> Map("order" -> "desc")))))
+  }
+
+  "sort" should "return a sort Map with order correctly specified with multiple fields" in {
+    EsQueryHelpers.sort(Seq(Map("field" -> Map("order" -> "asc")), Map("field2" -> Map("order" -> "desc")))) shouldBe
+      Some(Map("sort" -> Seq(Map("field" -> Map("order" -> "asc")),
+        Map("field2" -> Map("order" -> "desc"))
+      )))
+  }
+
   "#template" should "return Some template value when query is present" in {
     EsQueryHelpers.template(Some(Map("abc" -> 123)), Some(Map("ddd" -> 456))) shouldBe
       Some(Map("template" -> Map("abc" -> 123, "ddd" -> 456)))

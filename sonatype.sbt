@@ -1,6 +1,7 @@
 sonatypeProfileName := "com.workday"
 
 pomExtra in Global := {
+  <artifactId>escalar</artifactId>
   <url>https://github.com/Workday/escalar</url>
     <licenses>
       <license>

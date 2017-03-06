@@ -152,6 +152,7 @@ trait EsQuery extends JestUtils {
     * @param searchJson JsonObject representing a search response from ES.
     * @return SearchHits object with hits data.
     */
+  // scalastyle:off cyclomatic.complexity
   @VisibleForTesting
   private[esclient] def handleHitsInResult(searchJson: JsonObject): SearchHits = {
     val hitsObj = searchJson.get("hits").getAsJsonObject
@@ -163,7 +164,8 @@ trait EsQuery extends JestUtils {
           index = if (h.has(EsClient._INDEX)) h.get(EsClient._INDEX).getAsString else "",
           typeName = if (h.has(EsClient._TYPE)) h.get(EsClient._TYPE).getAsString else "",
           id = h.get(EsClient._ID).getAsString,
-          score = h.get(EsClient._SCORE).getAsDouble,
+          score = if (h.has(EsClient._SCORE) && !h.get(EsClient._SCORE).isJsonNull)
+            Some(h.get(EsClient._SCORE).getAsDouble) else None,
           source = if (h.has(EsClient._SOURCE)) h.get(EsClient._SOURCE).toString else "", // getting all doc IDs does not give back any fields
           matchedFields = {
             if (h.has(EsClient.MATCHED_QUERIES))
@@ -189,6 +191,7 @@ trait EsQuery extends JestUtils {
     } else {
       Seq.empty
     }
+    // scalastyle:on cyclomatic.complexity
 
     SearchHits(
       total = hitsObj.get("total").getAsInt,
@@ -318,7 +321,7 @@ case class SearchHit(
   index: String,
   typeName: String,
   id: String,
-  score: Double,
+  score: Option[Double],
   source: String,
   matchedFields: Option[Seq[String]],
   explain: Option[String]

@@ -9,7 +9,7 @@ package com.workday.esclient.actions
 
 import com.google.gson.Gson
 import io.searchbox.core.{Bulk, BulkResult}
-import org.slf4j.LoggerFactory
+import org.apache.log4j.Logger
 
 /**
   * Builder class for error processing bulk action.
@@ -27,7 +27,7 @@ class ErrorProcessingBulkBuilder extends Bulk.Builder {
   * @param builder [[com.workday.esclient.actions.ErrorProcessingBulkBuilder]]
   */
 class ErrorProcessingBulkAction(builder: ErrorProcessingBulkBuilder) extends Bulk(builder) {
-  private[ErrorProcessingBulkAction] val logger = LoggerFactory.getLogger(classOf[ErrorProcessingBulkAction])
+  private[ErrorProcessingBulkAction] val logger = Logger.getLogger(classOf[ErrorProcessingBulkAction])
 
   /**
     * Creates a new Elasticsearch result from result.

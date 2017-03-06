@@ -15,7 +15,7 @@ class EsQuerySpec extends EsClientSpec {
 
   behavior of "#search"
   it should "search" in {
-    val response = EsSearchResponse(77, SearchHits(1, Some(0.0), Seq(SearchHit("", "", "", 0.0, """{"prop":"value"}""", None, None))), emptyAggregation)
+    val response = EsSearchResponse(77, SearchHits(1, Some(0.0), Seq(SearchHit("", "", "", Some(0.0), """{"prop":"value"}""", None, None))), emptyAggregation)
     val esResponseJson = """{"took": 77, "hits": { "total": 1, "max_score": 0.0, "hits": [{ "_index": "", "_type": "", "_id": "", "_score": 0.0, "_source": { "prop": "value" } }] } }"""
 
     val esClient = new EsClientWithMockedEs().whenSearch(esResponseJson)
@@ -43,7 +43,7 @@ class EsQuerySpec extends EsClientSpec {
   it should "include aggregations in search results" in {
     val aggregation = new JsonObject()
     aggregation.addProperty("count", 1)
-    val response = EsSearchResponse(0, SearchHits(1, Some(0.5), Seq(SearchHit("", "", "", 0.5, """{"prop":"value"}""", None, None))), aggregation)
+    val response = EsSearchResponse(0, SearchHits(1, Some(0.5), Seq(SearchHit("", "", "", Some(0.5), """{"prop":"value"}""", None, None))), aggregation)
     val esResponseJson =  s"""{
                               |  "took": 0,
                               |  "hits": {
@@ -66,7 +66,7 @@ class EsQuerySpec extends EsClientSpec {
 
   it should "include matched queries in search results" in {
     val matchedFields = Some(Seq("queryName1", "queryName2"))
-    val response = EsSearchResponse(77, SearchHits(1, Some(0.0), Seq(SearchHit("", "", "", 0.0, "", matchedFields, None))), emptyAggregation)
+    val response = EsSearchResponse(77, SearchHits(1, Some(0.0), Seq(SearchHit("", "", "", Some(0.0), "", matchedFields, None))), emptyAggregation)
     val esResponseJson =
       """{
          |  "took": 77,
@@ -90,7 +90,7 @@ class EsQuerySpec extends EsClientSpec {
 
   it should "include matched queries in search results but remove named query delimiter from query name" in {
     val matchedFields = Some(Seq("queryName1", "queryName2"))
-    val response = EsSearchResponse(77, SearchHits(1, Some(0.0), Seq(SearchHit("", "", "", 0.0, "", matchedFields, None))), emptyAggregation)
+    val response = EsSearchResponse(77, SearchHits(1, Some(0.0), Seq(SearchHit("", "", "", Some(0.0), "", matchedFields, None))), emptyAggregation)
     val esResponseJson =
       """{
         |  "took": 77,
@@ -248,7 +248,7 @@ class EsQuerySpec extends EsClientSpec {
 
   behavior of "#getSearchHitsCount"
   it should "get search hits count" in {
-    val response = EsSearchResponse(77, SearchHits(1, Some(0.0), Seq(SearchHit("", "", "", 0.0, """{"prop":"value"}""", None, None))), emptyAggregation)
+    val response = EsSearchResponse(77, SearchHits(1, Some(0.0), Seq(SearchHit("", "", "", Some(0.0), """{"prop":"value"}""", None, None))), emptyAggregation)
     val esResponseJson = """{"took": 77, "hits": { "total": 123, "max_score": 0.0, "hits": [{ "_index": "", "_type": "", "_id": "", "_score": 0.0, "_source": { "prop": "value" } }] } }"""
 
     val esClient = new EsClientWithMockedEs().whenSearch(esResponseJson)
