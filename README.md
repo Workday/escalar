@@ -76,7 +76,8 @@ patch and get a passing CI build before submitting a pull request.
 
 Documentation
 ---
-...
+The full documentation can be found on [Sonatype](https://oss.sonatype.org/service/local/repositories/releases/archive/com/workday/escalar_2.10/1.7.0/escalar_2.10-1.7.0-javadoc.jar/!/index.html#com.workday.esclient.package)].
+
 
 Dependencies
 ---
