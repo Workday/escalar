@@ -2,6 +2,7 @@
 tmp/
 *.log
 .cache
+local.*
 
 # macosx
 *.DS_Store
