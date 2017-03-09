@@ -8,3 +8,7 @@ publishTo := {
 }
 pomIncludeRepository := { _ => false }
 publishArtifact in Test := false
+
+pgpSecretRing := file("local.secring.gpg")
+
+pgpPublicRing := file("local.pubring.gpg")
