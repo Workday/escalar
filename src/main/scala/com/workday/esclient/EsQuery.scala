@@ -136,7 +136,7 @@ trait EsQuery extends JestUtils {
     * @param searchResult Jest SearchResult from ES.
     * @return EsResult wrapping the handled response from ES.
     */
-  private[this] def handleSearchResult(searchResult: SearchResult): EsResult[EsSearchResponse] = {
+  protected def handleSearchResult(searchResult: SearchResult): EsResult[EsSearchResponse] = {
     handleJestResult(searchResult) { successfulJestResult =>
       val json = successfulJestResult.getJsonObject
 
@@ -154,7 +154,7 @@ trait EsQuery extends JestUtils {
     */
   // scalastyle:off cyclomatic.complexity
   @VisibleForTesting
-  private[esclient] def handleHitsInResult(searchJson: JsonObject): SearchHits = {
+  protected[esclient] def handleHitsInResult(searchJson: JsonObject): SearchHits = {
     val hitsObj = searchJson.get("hits").getAsJsonObject
     val hitsSeq = if (hitsObj.has("hits")) {
       hitsObj.get("hits").getAsJsonArray.iterator().asScala.toSeq.map(hit => {
