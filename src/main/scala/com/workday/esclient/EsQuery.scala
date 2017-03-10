@@ -136,7 +136,7 @@ trait EsQuery extends JestUtils {
     * @param searchResult Jest SearchResult from ES.
     * @return EsResult wrapping the handled response from ES.
     */
-  protected def handleSearchResult(searchResult: SearchResult): EsResult[EsSearchResponse] = {
+  def handleSearchResult(searchResult: SearchResult): EsResult[EsSearchResponse] = {
     handleJestResult(searchResult) { successfulJestResult =>
       val json = successfulJestResult.getJsonObject
 
@@ -225,7 +225,7 @@ trait EsQuery extends JestUtils {
     * @return buildable search action object.
     */
   @VisibleForTesting
-  protected def createSearchAction(index: String, typeName: String = "", query: String, params: Map[String, Any] = Map()) = {
+  def createSearchAction(index: String, typeName: String = "", query: String, params: Map[String, Any] = Map()): Search.Builder = {
     var searchAction = new Search.Builder(query).addIndex(index)
     if (typeName.nonEmpty) searchAction = searchAction.addType(typeName)
     params.foreach { case (key: String, value: Any) => searchAction.setParameter(key, value) }
