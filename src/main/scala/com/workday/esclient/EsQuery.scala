@@ -154,7 +154,7 @@ trait EsQuery extends JestUtils {
     */
   // scalastyle:off cyclomatic.complexity
   @VisibleForTesting
-  protected[esclient] def handleHitsInResult(searchJson: JsonObject): SearchHits = {
+  private[esclient] def handleHitsInResult(searchJson: JsonObject): SearchHits = {
     val hitsObj = searchJson.get("hits").getAsJsonObject
     val hitsSeq = if (hitsObj.has("hits")) {
       hitsObj.get("hits").getAsJsonArray.iterator().asScala.toSeq.map(hit => {
@@ -225,7 +225,7 @@ trait EsQuery extends JestUtils {
     * @return buildable search action object.
     */
   @VisibleForTesting
-  private def createSearchAction(index: String, typeName: String = "", query: String, params: Map[String, Any] = Map()) = {
+  protected def createSearchAction(index: String, typeName: String = "", query: String, params: Map[String, Any] = Map()) = {
     var searchAction = new Search.Builder(query).addIndex(index)
     if (typeName.nonEmpty) searchAction = searchAction.addType(typeName)
     params.foreach { case (key: String, value: Any) => searchAction.setParameter(key, value) }
