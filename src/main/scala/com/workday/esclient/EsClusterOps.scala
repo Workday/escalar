@@ -173,7 +173,7 @@ trait EsClusterOps extends JestUtils {
     * @return Cat action.
     */
   @VisibleForTesting
-  private[esclient] def buildCatIndices(): Cat = new Cat.IndicesBuilder().build()
+  protected def buildCatIndices(): Cat = new Cat.IndicesBuilder().build()
 
   /**
     * Builds a Cat action for shards.
