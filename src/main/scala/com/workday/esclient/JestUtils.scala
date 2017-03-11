@@ -29,7 +29,7 @@ trait JestUtils {
     * @return EsResult[T]
     */
   @VisibleForTesting
-  protected def toEsResult[T : Manifest](jestResult: JestResult, allowError: Boolean = false): EsResult[T] = {
+  def toEsResult[T : Manifest](jestResult: JestResult, allowError: Boolean = false): EsResult[T] = {
     handleJestResult(jestResult, allowError) { successfulJestResult =>
       JsonUtils.fromJson[T](successfulJestResult.getJsonString)
     }
