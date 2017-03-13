@@ -1,6 +1,6 @@
 import sbt.Keys._
 import sbt._
-import scoverage.{ScoverageKeys, ScoverageSbtPlugin}
+import scoverage.ScoverageSbtPlugin.ScoverageKeys
 
 object Build extends Build {
 
@@ -24,7 +24,6 @@ object Build extends Build {
         "com.fasterxml.jackson.core" % "jackson-core" % "2.5.3",
         "log4j" % "log4j" % "1.2.17"
       ),
-      ScoverageKeys.coverageEnabled := true,
       ScoverageKeys.coverageMinimum := 100,
       ScoverageKeys.coverageFailOnMinimum := true
     )
