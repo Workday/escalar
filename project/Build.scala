@@ -16,7 +16,7 @@ object Build extends Build {
       commonSettings,
       libraryDependencies ++= Seq(
         "io.searchbox" % "jest" % "0.1.7",
-        "org.mockito" % "mockito-core" % "1.9.5",
+        "org.mockito" % "mockito-core" % "1.9.5" % "test",
         "org.scalatest" %% "scalatest" % "2.1.2" % "test",
         "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.5.3",
         "com.fasterxml.jackson.core" % "jackson-annotations" % "2.5.3",
