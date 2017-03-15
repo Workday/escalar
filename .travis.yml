@@ -7,6 +7,8 @@ before_install:
 - tar xvf local.keys.tar
 script:
 - sbt +clean +coverage +test +coverageReport
+after_success:
+- test $TRAVIS_BRANCH = "master" && bash <(curl -s https://codecov.io/bash)
 deploy:
   provider: script
   script: scripts/release.sh
