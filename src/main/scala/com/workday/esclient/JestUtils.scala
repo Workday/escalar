@@ -19,6 +19,9 @@ import io.searchbox.client.{JestClient, JestResult}
   * It also includes other helper functions for parsing responses from the Jest client.
   */
 trait JestUtils {
+  /**
+    * @return JestClient
+    */
   def jest: JestClient  // overridden in EsClient.scala with a val
 
   /**

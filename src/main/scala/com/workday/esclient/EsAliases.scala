@@ -177,6 +177,31 @@ case class ReturnedAliases(aliases: Map[String, RoutingInfo])
 case class RoutingInfo(indexRouting: Option[String], searchRouting: Option[String])
 
 /**
+  * Generic trait wrapping Elasticsearch alias information.
+  */
+trait GenericAliasInfo{
+  /**
+    * @return String index for the alias.
+    */
+  def index: String
+
+  /**
+    * @return String alias name.
+    */
+  def alias: String
+
+  /**
+    * @return Optional string for the ES index routing.
+    */
+  def indexRouting: Option[String]
+
+  /**
+    * @return Optional string for the ES search routing.
+    */
+  def searchRouting: Option[String]
+}
+
+/**
   * Case class wrapping Elasticsearch alias information.
   * @param index String index for the alias.
   * @param alias String alias name.
@@ -189,8 +214,10 @@ case class AliasInfo(
   alias: String,
   indexRouting: Option[String] = None,
   searchRouting: Option[String] = None
-){
+) extends GenericAliasInfo{
   lazy val toMap: Map[String, Any] = Map("index" -> index, "alias" -> alias) ++
     indexRouting.map { routingVal => Map("index_routing" -> routingVal) }.getOrElse(Map()) ++
     searchRouting.map { routingVal => Map("search_routing" -> routingVal) }.getOrElse(Map())
 }
+
+
