@@ -1,14 +1,22 @@
 language: scala
 scala:
 - 2.10.4
+- 2.11.8
 before_install:
 - openssl aes-256-cbc -K $encrypted_3a7331bbe499_key -iv $encrypted_3a7331bbe499_iv
   -in keys.tar.enc -out local.keys.tar -d
 - tar xvf local.keys.tar
 script:
 - sbt clean coverage test coverageReport
-after_success:
-- bash <(curl -s https://codecov.io/bash) && sbt +clean && sbt +publishSigned && sbt +sonatypeRelease
+#old release action
+#after_success:
+#- bash <(curl -s https://codecov.io/bash) && sbt +clean && sbt +publishSigned && sbt +sonatypeRelease
+deploy:
+  provider: script
+  script: scripts/release.sh
+  on:
+    tags: true
+    branch: master
 env:
   global:
     secure: E6+JVOwUIl4CvkM8LuuuWQY4LlUWovd0SbR0KEOFRZUytFg9bEhCBoFx4R17D6pYuWMklWYydQ9mo4M9AhKE8YgKVU4gTIL2793K9ulOzSeR7/3DewiQ0TYg1JxgHP2+Khk77SctysBzYFmOvowV7AvqyIepojcw1fEVv/SHEaUKDUdoOEEYts89+pNTD3xZns1rWndtqBCiAD36G4FpMbdZMAVPpIyRp4sZGCVGKcoVcJoHt4f9IAIsSVAYKG/K//yQB4BiVsWKZn+sO5Zc7Mougpl3auD0/UFBKhnbid9rnoGiROKoMsqEPKFckEYYBK7Ra6TQD4Qzlp8V4r0CCutWl7U57DgPa92tXyv9sU3wD1Cn1WTwLjPO7PUJlNHhuTK6cqKOhH5Yeo3BCY2fMToYRPNk2fvx/rDbTUyRrQbBsYvG97zy+DyxjQz/Bh0SB06Tlf1J2lrVIqfQvlXYByMgAvpe6MmQl7VdiXIRPw0y5Ro1S+s9UMk0quYYnz0db63lbyHIGguLQEDP96ZGtkIFNnkEGnukxRpfWw8JsKzo2M8pD7ps63tHVlgBHJqTNvuSRVwD0pRJy02XnGoxwipDlTgbsA70EqndiniJr7XeyyplZjllCdyHEr/4FHDdp/2iz2/rF+pgRwIarv8Wd/1epX3pZ4F+BF0ce6XC+U8=
