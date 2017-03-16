@@ -42,9 +42,9 @@ trait EsIndexingDocs extends JestUtils {
     * @param typeName String ES type name.
     * @param id String id to index document under.
     * @param doc String doc to index.
-    * @return EsResult of [[com.workday.esclient.UpdateResponse]]
+    * @return EsResult of [[com.workday.esclient.GenericUpdateResponse]]
     */
-  def index(index: String, typeName: String, id: String, doc: String): EsResult[UpdateResponse] = {
+  def index(index: String, typeName: String, id: String, doc: String): EsResult[GenericUpdateResponse] = {
     if (index.isEmpty || typeName.isEmpty || id.isEmpty || doc.isEmpty) {
       EsInvalidResponse("Invalid arguments")
     } else {
@@ -103,10 +103,12 @@ trait EsIndexingDocs extends JestUtils {
             }
           }
         }
-        else
+        else {
           EsResponse(originalBulkResponseValue)
+        }
       case e: EsInvalidResponse => e
       case e: EsError => e
+      case e: GenericEsError => handleEsResult(e)
     }
   }
 
@@ -194,6 +196,13 @@ trait EsIndexingDocs extends JestUtils {
   }
 
   /**
+    * Override-able method to catch new ES error case classes and return the contents.
+    * @param e EsResult[Nothing] to represent child error case classes.
+    * @return EsResult[Nothing] the error case class.
+    */
+  protected def handleEsResult(e: GenericEsError): GenericEsError = e
+
+  /**
     * Builds an update action for a document with the provided update payload.
     * As defined by: https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-update.html
     * @param index String ES index name.
@@ -274,8 +283,9 @@ case class BulkResponse(
 
 /**
   * Trait wrapping a Bulk item response from Elasticsearch.
+  * Currently is extensible for handling other types of Bulk responses not currently implemented here.
   */
-sealed trait BulkItemResponse {
+trait BulkItemResponse {
   def index: String
   def typeName: String
   def id: String
@@ -375,6 +385,17 @@ case class Token(
 )
 
 /**
+  * Generic trait for an Update response.
+  */
+trait GenericUpdateResponse {
+  def index: String
+  def typeName: String
+  def id: String
+  def version: Int
+  def created: Boolean
+}
+
+/**
   * Case class for an Update response from Elasticsearch.
   * Note that even if we give these names like "_index" Jackson still won't serialize it automatically.
   * @param index String ES index name.
@@ -389,7 +410,7 @@ case class UpdateResponse(
   @JsonProperty(EsClient._ID) id: String,
   @JsonProperty(EsClient._VERSION) version: Int,
   created: Boolean
-)
+) extends GenericUpdateResponse
 
 
 /**
@@ -417,7 +438,7 @@ case class UpdateDocAction(index: String, typeName: String, id: String, doc: Str
 }
 
 /**
-  * Traitf for an Elasticsearch action.
+  * Trait for an Elasticsearch action.
   */
 sealed trait Action {
   def index: String

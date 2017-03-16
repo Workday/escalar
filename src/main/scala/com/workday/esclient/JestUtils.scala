@@ -44,10 +44,11 @@ trait JestUtils {
     * @tparam J we need J here to allow things like jest's CountResult
     * @return EsResult[T] either EsResponse[T] or an error message type
     */
-  protected[this] def handleJestResult[J <: JestResult, T](jestResult: J, allowError: Boolean = false)(responseHandler: J => T): EsResult[T] = {
+  protected def handleJestResult[J <: JestResult, T](jestResult: J, allowError: Boolean = false)(responseHandler: J => T): EsResult[T] = {
     // Return a EsInvalidResponse if both the JSON Object and String are null.
-    if(Option(jestResult.getJsonObject).isEmpty && Option(jestResult.getJsonString).isEmpty)
+    if(Option(jestResult.getJsonObject).isEmpty && Option(jestResult.getJsonString).isEmpty) {
       EsInvalidResponse("Unable to Parse JSON into the given class because result contains all NULL entries.")
+    }
     else if (!allowError && (Option(jestResult.getJsonObject).nonEmpty && !jestResult.getJsonObject.entrySet().isEmpty)
       && jestResult.getJsonObject.has("error")) {
       JsonUtils.fromJson[EsError](jestResult.getJsonString)
@@ -55,8 +56,9 @@ trait JestUtils {
     else {
       try {
         // Set the JSON string if JSON object is set but the JSON string is null.
-        if(Option(jestResult.getJsonString).isEmpty)
+        if(Option(jestResult.getJsonString).isEmpty) {
           jestResult.setJsonString(jestResult.getJsonObject.toString)
+        }
         EsResponse(responseHandler(jestResult))
       }
       catch {
@@ -86,7 +88,7 @@ case class Acknowledgement(
   * Trait for wrapping Elasticsearch response types.
   * @tparam T response type
   */
-sealed trait EsResult[+T] {
+trait EsResult[+T] {
   def get: T
 
   def map[R](f: T => R): EsResult[R] = this match {
@@ -97,10 +99,17 @@ sealed trait EsResult[+T] {
 }
 
 /**
+  * Generic trait for all ES error case classes.
+  */
+trait GenericEsError extends EsResult[Nothing] {
+  def get: Nothing
+}
+
+/**
   * Case class for an Elasticsearch invalid response.
   * @param msg ES response message
   */
-case class EsInvalidResponse(msg: String) extends EsResult[Nothing] {
+case class EsInvalidResponse(msg: String) extends GenericEsError {
   def get: Nothing = throw new NoSuchElementException(msg)
 }
 
@@ -109,7 +118,7 @@ case class EsInvalidResponse(msg: String) extends EsResult[Nothing] {
   * @param error error message
   * @param status status code
   */
-case class EsError(error: String, status: Int) extends EsResult[Nothing] {
+case class EsError(error: String, status: Int) extends GenericEsError {
   def get: Nothing = throw new NoSuchElementException(error + ", status " + status)
 }
 

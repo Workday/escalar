@@ -84,12 +84,26 @@ class EsIndexingDocsSpec extends EsClientSpec {
 
   it should "handle EsError" in {
     val esClient = spy(new EsClient(mock[JestClient]))
-    val errorResponse = EsError(error = "Somethign happened", status = 500)
+    val errorResponse = EsError(error = "Something happened", status = 500)
     doReturn(errorResponse).when(esClient).bulk(any[Seq[UpdateDocAction]])
 
     val updateAction = UpdateDocAction("", "", "", "{}")
     val actions = Seq(updateAction, updateAction)
     esClient.bulkWithRetry(actions) shouldBe an[EsError]
+    verify(esClient, times(1)).bulk(any[Seq[UpdateDocAction]])
+  }
+
+  it should "handle GenericEsError" in {
+    case class newEsError(error: String, status: Int) extends GenericEsError {
+      def get: Nothing = throw new NoSuchElementException(error + ", status " + status)
+    }
+    val esClient = spy(new EsClient(mock[JestClient]))
+    val errorResponse = newEsError(error = "Something happened", status = 500)
+    doReturn(errorResponse).when(esClient).bulk(any[Seq[UpdateDocAction]])
+
+    val updateAction = UpdateDocAction("", "", "", "{}")
+    val actions = Seq(updateAction, updateAction)
+    esClient.bulkWithRetry(actions) shouldBe an[newEsError]
     verify(esClient, times(1)).bulk(any[Seq[UpdateDocAction]])
   }
 
