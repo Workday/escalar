@@ -108,7 +108,7 @@ trait EsIndexingDocs extends JestUtils {
         }
       case e: EsInvalidResponse => e
       case e: EsError => e
-      case e: GenericEsError => handleEsResult(e)
+      case e: GenericEsError => e
     }
   }
 
@@ -194,13 +194,6 @@ trait EsIndexingDocs extends JestUtils {
     val jestResult = jest.execute(buildDeleteByQueryAction(index, query = query))
     toEsResult[DeleteByQueryResponse](jestResult)
   }
-
-  /**
-    * Override-able method to catch new ES error case classes and return the contents.
-    * @param e EsResult[Nothing] to represent child error case classes.
-    * @return EsResult[Nothing] the error case class.
-    */
-  protected def handleEsResult(e: GenericEsError): GenericEsError = e
 
   /**
     * Builds an update action for a document with the provided update payload.

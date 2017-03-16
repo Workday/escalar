@@ -24,14 +24,14 @@ trait EsAliases extends JestUtils {
     * @param aliases Sequence of aliases including alias names and indices to map to.
     * @return EsResult wrapping an ES acknowledgment.
     */
-  def createAliases(aliases: Seq[GenericAliasInfo]): EsResult[Acknowledgement] = modifyAliases(aliases, Nil)
+  def createAliases(aliases: Seq[GenericAliasInfo]): EsResult[GenericAcknowledgement] = modifyAliases(aliases, Nil)
 
   /**
     * Deletes aliases from Elasticsearch.
     * @param aliases Sequence of aliases including alias names and indices to map to.
     * @return EsResult wrapping an ES acknowledgment.
     */
-  def deleteAliases(aliases: Seq[GenericAliasInfo]): EsResult[Acknowledgement] = modifyAliases(Nil, aliases)
+  def deleteAliases(aliases: Seq[GenericAliasInfo]): EsResult[GenericAcknowledgement] = modifyAliases(Nil, aliases)
 
   /**
     * Returns an AliasAction object to alter aliases in Elasticsearch.
@@ -50,7 +50,7 @@ trait EsAliases extends JestUtils {
     * @param toRemove Sequences of aliases to remove from ES>
     * @return EsResult wrapping an ES acknowledgment.
     */
-  def modifyAliases(toAdd: Seq[GenericAliasInfo], toRemove: Seq[GenericAliasInfo]): EsResult[Acknowledgement] = {
+  def modifyAliases(toAdd: Seq[GenericAliasInfo], toRemove: Seq[GenericAliasInfo]): EsResult[GenericAcknowledgement] = {
     val jestResult = jest.execute(buildModifyAliases(toAdd, toRemove))
     toEsResult[Acknowledgement](jestResult)
   }

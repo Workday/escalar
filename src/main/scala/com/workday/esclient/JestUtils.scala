@@ -75,13 +75,17 @@ trait JestUtils {
   }
 }
 
+trait GenericAcknowledgement {
+  def acknowledged: Boolean
+}
+
 /**
   * Case class for acknowledgment EsResults.
   * @param acknowledged boolean value for acknowledgment
   */
 case class Acknowledgement(
   acknowledged: Boolean
-)
+) extends GenericAcknowledgement
 
 // We'll likely want to consider adding the original jestResult as a parameter
 /**
