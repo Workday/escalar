@@ -22,6 +22,10 @@ Create indices, index documents, create and restore from snapshots, manage your 
  
 How-to
 ---
+First add escalar as a dependency in your `build.sbt` file. Currently escalar is cross-built against Scala 2.10 and 2.11:
+````scala
+libraryDependencies += "com.workday" %% "escalar" % "1.7.0"
+````
 
 Build a client like this:
 ````scala
@@ -38,25 +42,26 @@ Create an index, index a document, and retrieve that same document:
 val indexName = "presidents" //index name
 val typeName = "president" //type for documents
 val id = "1" //document ID
-val doc1 = "{'first_name':'George', 'last_name':'Washington', 'home_state':'Virginia'}" //actual document to index
+val doc = "{\"first_name\":\"George\", \"last_name\":\"Washington\", \"home_state\":\"Virginia\"}" //actual document to index
 client.createIndex(indexName) //creates index in ES
 client.index(indexName, typeName, id, doc) //indexes doc to that index
-val getDoc = client.get(indexName, id)
+val getDoc = client.get(indexName, id) //get the doc within an EsResponse object
 ````
 Get more sophisticated by adding a few more presidents to our "presidents" index and query by home state:
 ````scala
 val doc2 = "{'first_name':'Thomas', 'last_name':'Jefferson', 'home_state':'Virginia'}"
-val doc3 = "{'first_name':'Abraham', 'last_name':'Lincoln', 'home_state':'Ohio'}"
+val doc3 = "{'first_name':'Abraham', 'last_name':'Lincoln', 'home_state':'Illinois'}"
 val doc4 = "{'first_name':'Theodore', 'last_name':'Roosevelt', 'home_state':'New York'}"
 val bulkActions = Seq(UpdateDocAction(indexName, typeName, "2", doc2), 
                       UpdateDocAction(indexName, typeName, "3", doc3), 
                       UpdateDocAction(indexName, typeName, "4", doc4))
 client.bulkWithRetry(bulkActions) //bulk add documents
-client.search(indexName, "Virginia") //search the "presidents" index for documents with the text "Virginia"
+client.search(indexName, typeName, "{\"query\": {\"query_string\": {\"query\": \"New York\"}}}") //search the "presidents" index for documents with the text "Virginia"
 ````
-Finally remove all the docs we just created:
+Finally remove all the docs we just created and delete the index:
 ````scala
 client.deleteDocsByQuery(indexName) //defaults to "match_all" query
+client.deleteIndex(indexName)
 ````
 
 Building, Testing, and Contributing
