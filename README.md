@@ -22,6 +22,10 @@ Create indices, index documents, create and restore from snapshots, manage your 
  
 How-to
 ---
+First add escalar as a dependency in your `build.sbt` file. Currently escalar is cross-built against Scala 2.10 and 2.11:
+````scala
+libraryDependencies += "com.workday" %% "escalar" % "1.7.0"
+````
 
 Build a client like this:
 ````scala
