@@ -38,27 +38,27 @@ trait EsIndexingDocs extends JestUtils {
 
   /**
     * Indexes a given doc to an Elasticsearch index under the given id.
-    * @param index String ES index name.
+    * @param index    String ES index name.
     * @param typeName String ES type name.
-    * @param id String id to index document under.
-    * @param doc String doc to index.
-    * @return EsResult of [[com.workday.esclient.GenericUpdateResponse]]
+    * @param id       String id to index document under.
+    * @param doc      String doc to index.
+    * @return EsResult of [[com.workday.esclient.UpdateResponse]]
     */
-  def index(index: String, typeName: String, id: String, doc: String): EsResult[GenericUpdateResponse] = {
+  def index(index: String, typeName: String, id: String, doc: String): EsResult[UpdateResponse] = {
     if (index.isEmpty || typeName.isEmpty || id.isEmpty || doc.isEmpty) {
       EsInvalidResponse("Invalid arguments")
     } else {
       val updateAction = buildUpdateAction(index, typeName, id, makeIndexDocumentUpdateScript(doc, true, true))
       val jestResult = jest.execute(updateAction)
 
-      toEsResult[UpdateResponse](jestResult)
+      toEsResult[UpdateResponse_1_7](jestResult)
     }
   }
 
   /**
     * Attempts a bulk sequence of Elasticsearch actions and retries on failure up to a given depth of retries.
     * @param actions Sequence of action to attempt.
-    * @param depth Int recursion depth limit. Defaults to 1. [[com.workday.esclient.EsIndexingDocs.RetriesLimit]] is set to 5.
+    * @param depth   Int recursion depth limit. Defaults to 1. [[com.workday.esclient.EsIndexingDocs.RetriesLimit]] is set to 5.
     * @return EsResult of [[com.workday.esclient.BulkResponse]]
     */
   def bulkWithRetry(actions: Seq[Action], depth: Int = 1): EsResult[BulkResponse] = {
@@ -74,11 +74,11 @@ trait EsIndexingDocs extends JestUtils {
       *   f. Return response.
       */
     val bulkResponse = bulk(actions)
-    val currentActions = actions.zipWithIndex.map{t => (t._2, t._1)}
+    val currentActions = actions.zipWithIndex.map { t => (t._2, t._1) }
 
     bulkResponse match {
       case EsResponse(originalBulkResponseValue) =>
-        val bulkResponseIndexedMap = originalBulkResponseValue.items.zipWithIndex.map{t => (t._2, t._1)}.toMap
+        val bulkResponseIndexedMap = originalBulkResponseValue.items.zipWithIndex.map { t => (t._2, t._1) }.toMap
         val rejectedBulkResponseByIndex = bulkResponseIndexedMap.filter(kv => kv._2.status == ESBackPressureErrorCode)
         val backpressureActions = currentActions.filter(indexActionTuple => rejectedBulkResponseByIndex.contains(indexActionTuple._1))
 
@@ -94,7 +94,7 @@ trait EsIndexingDocs extends JestUtils {
             retryResponse match {
               case EsResponse(retryResponseValue) => {
                 val retriedRequestResponses = rejectedBulkResponseByIndex.keys.toSeq.sortWith(_ <= _).zip(retryResponseValue.items).toMap
-                val nonQueuePressureError = originalBulkResponseValue.items.exists(response => response.hasError && response.status != ESBackPressureErrorCode)
+                val nonQueuePressureError = originalBulkResponseValue.items.exists(response => response.hasHttpError && response.status != ESBackPressureErrorCode)
 
                 EsResponse(BulkResponse(nonQueuePressureError & retryResponseValue.errors,
                   (bulkResponseIndexedMap ++ retriedRequestResponses).toSeq.sortWith(_._1 < _._1).map(_._2)))
@@ -108,7 +108,6 @@ trait EsIndexingDocs extends JestUtils {
         }
       case e: EsInvalidResponse => e
       case e: EsError => e
-      case e: GenericEsError => e
     }
   }
 
@@ -121,21 +120,21 @@ trait EsIndexingDocs extends JestUtils {
   def bulk(actions: Seq[Action]): EsResult[BulkResponse] = {
     lazy val EmptyResponse = new EsResponse[BulkResponse](new BulkResponse(false, Nil))
 
-    if(actions.isEmpty) {
+    if (actions.isEmpty) {
       EmptyResponse
     } else {
-      val docUpdateActions = actions collect { case a: UpdateDocAction => a}
-      val deleteActions = actions collect { case a: DeleteAction => a}
-      val scriptUpdateActions = actions collect { case a: UpdateScriptAction => a}
+      val docUpdateActions = actions collect { case a: UpdateDocAction => a }
+      val deleteActions = actions collect { case a: DeleteAction => a }
+      val scriptUpdateActions = actions collect { case a: UpdateScriptAction => a }
 
-      val jestIndexActions = docUpdateActions.map { case action : UpdateDocAction =>
+      val jestIndexActions = docUpdateActions.map { case action: UpdateDocAction =>
         // We were given the document, so just update it
-        buildUpdateAction(action.index, action.typeName, action.id, makeIndexDocumentUpdateScript(action.doc, true , true))
+        buildUpdateAction(action.index, action.typeName, action.id, makeIndexDocumentUpdateScript(action.doc, true, true))
       }
       val jestDeleteActions = deleteActions map { case DeleteAction(index, typeName, id) =>
         new Delete.Builder(id).index(index).`type`(typeName).build
       }
-      val jestScriptActions = scriptUpdateActions.map { case action : UpdateScriptAction =>
+      val jestScriptActions = scriptUpdateActions.map { case action: UpdateScriptAction =>
         // We were given a specific script to run, so do an update with that script as-is
         buildUpdateAction(action.index, action.typeName, action.id, action.script)
       }
@@ -172,8 +171,8 @@ trait EsIndexingDocs extends JestUtils {
 
   /**
     * Submits the given source for analysis using an Elasticsearch Analyzer, defautlting to the standard analyzer.
-    * @param source String source to analyze.
-    * @param index String ES index name.
+    * @param source   String source to analyze.
+    * @param index    String ES index name.
     * @param analyzer String name of ES Analyzer to use.
     * @return EsResult of [[com.workday.esclient.AnalyzeResponse]]
     */
@@ -198,8 +197,8 @@ trait EsIndexingDocs extends JestUtils {
   /**
     * Builds an update action for a document with the provided update payload.
     * As defined by: https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-update.html
-    * @param index String ES index name.
-    * @param id String id of document to update.
+    * @param index         String ES index name.
+    * @param id            String id of document to update.
     * @param updatePayload String actual payload to update document with.
     * @return [[io.searchbox.core.Update]] object for Elasticsearch.
     */
@@ -228,9 +227,9 @@ trait EsIndexingDocs extends JestUtils {
     val itemObj = itemJson.getAsJsonObject
 
     val response = if (itemObj.has("update")) {
-      JsonUtils.fromJson[BulkUpdateItemResponse](itemObj.get("update").toString)
+      JsonUtils.fromJson[BulkUpdateItemResponse_1_7](itemObj.get("update").toString)
     } else if (itemObj.has("delete")) {
-      JsonUtils.fromJson[BulkDeleteItemResponse](itemObj.get("delete").toString)
+      JsonUtils.fromJson[BulkDeleteItemResponse_1_7](itemObj.get("delete").toString)
     } else {
       throw new IllegalArgumentException(itemObj.toString)
     }
@@ -242,7 +241,7 @@ trait EsIndexingDocs extends JestUtils {
     * Builds a Delete By Query action for Elasticsearch.
     * Uses a match_all query is none is provided.
     * @param indexName String ES index name.
-    * @param query Optional string for the ES query. Defaults to None.
+    * @param query     Optional string for the ES query. Defaults to None.
     * @return [[io.searchbox.core.DeleteByQuery]] object for Elasticsearch.
     */
   @VisibleForTesting
@@ -254,8 +253,8 @@ trait EsIndexingDocs extends JestUtils {
   /**
     * Returns the update script that will update the given document or add it to the index it if necessary.
     * @param document String of the actual document.
-    * @param upsert Boolean whether this is an upsert action. Defaults to true.
-    * @param noop Boolean whether the action is a no-op action. Defaults to true.
+    * @param upsert   Boolean whether this is an upsert action. Defaults to true.
+    * @param noop     Boolean whether the action is a no-op action. Defaults to true.
     * @return String of JSON to use as the index document update script for ES.
     */
   @VisibleForTesting
@@ -267,7 +266,7 @@ trait EsIndexingDocs extends JestUtils {
 /**
   * Case class for an Elasticsearch Bulk response.
   * @param errors Boolean whether any errors were reported.
-  * @param items Sequence of [[com.workday.esclient.BulkItemResponse]] from ES.
+  * @param items  Sequence of [[com.workday.esclient.BulkItemResponse]] from ES.
   */
 case class BulkResponse(
   errors: Boolean,
@@ -275,8 +274,8 @@ case class BulkResponse(
 )
 
 /**
-  * Trait wrapping a Bulk item response from Elasticsearch.
-  * Currently is extensible for handling other types of Bulk responses not currently implemented here.
+  * Trait wrapping the various Bulk item responses from Elasticsearch.
+  * See the [[https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-bulk.html Elasticsearch Docs]] for more info.
   */
 trait BulkItemResponse {
   def index: String
@@ -285,19 +284,29 @@ trait BulkItemResponse {
   def version: Int
   def status: Int
   def error: Option[String]
-  def hasError: Boolean = status >= 400
+  def hasHttpError: Boolean = status >= 400
 }
 
 /**
   * Case class for a Bulk update response from Elasticsearch.
-  * @param index String ES index name.
+  * See the [[https://www.elastic.co/guide/en/elasticsearch/reference/1.7/docs-bulk.html Elasticsearch Docs]] for more info.
+  * @version 1.7
+  * @param index    String ES index name.
   * @param typeName String ES type name.
-  * @param id String id of actual document.
-  * @param version Int document version number.
-  * @param status Int status code of response.
-  * @param error Optional string for any errors. Defaults to None.
+  * @param id       String id of actual document.
+  * @param version  Int document version number.
+  * @param status   Int status code of response.
+  * @param error    Optional string for any errors. Defaults to None.
+  * @example ES JSON Response
+  *          {
+  *          "_index": "test",
+  *          "_type": "person",
+  *          "_id": "1",
+  *          "_version": 4,
+  *          "status": 200
+  *          }
   */
-case class BulkUpdateItemResponse(
+case class BulkUpdateItemResponse_1_7(
   @JsonProperty(EsClient._INDEX) index: String,
   @JsonProperty(EsClient._TYPE) typeName: String,
   @JsonProperty(EsClient._ID) id: String,
@@ -308,14 +317,26 @@ case class BulkUpdateItemResponse(
 
 /**
   * Case class for a Bulk delete response from Elasticsearch.
-  * @param index String ES index name.
+  * See the [[https://www.elastic.co/guide/en/elasticsearch/reference/1.7/docs-bulk.html Elasticsearch Docs]] for more info.
+  * @version 1.7
+  * @param index    String ES index name.
   * @param typeName String ES type name.
-  * @param id String id of actual document.
-  * @param version Int document version number.
-  * @param status Int status code of response.
-  * @param error Optional string for any errors. Defaults to None.
+  * @param id       String id of actual document.
+  * @param version  Int document version number.
+  * @param status   Int status code of response.
+  * @param found    Boolean whether or not the document was found in the index.
+  * @param error    Optional string for any errors. Defaults to None.
+  * @example ES JSON Response
+  *          {
+  *          "_index": "test",
+  *          "_type": "person",
+  *          "_id": "1",
+  *          "_version": 5,
+  *          "status": 200,
+  *          "found": true
+  *          }
   */
-case class BulkDeleteItemResponse(
+case class BulkDeleteItemResponse_1_7(
   @JsonProperty(EsClient._INDEX) index: String,
   @JsonProperty(EsClient._TYPE) typeName: String,
   @JsonProperty(EsClient._ID) id: String,
@@ -335,9 +356,9 @@ case class AnalyzeResponse(
 
 /**
   * Case class for delete index statistics.
-  * @param total Int total attempted deleted.
+  * @param total      Int total attempted deleted.
   * @param successful Int number successfully deleted.
-  * @param failed Int number not deleted.
+  * @param failed     Int number not deleted.
   */
 case class DeleteIndexStats(
   @JsonProperty("total") total: Int,
@@ -363,11 +384,11 @@ case class DeleteByQueryResponse(
 
 /**
   * Case class for a token return by the Elasticsearch Analyze API.
-  * @param token String actual token returned.
+  * @param token       String actual token returned.
   * @param startOffset Int start offset from original string.
-  * @param endOffset Int end offset from original string.
-  * @param `type` String type of token.
-  * @param position Int position in the token sequence.
+  * @param endOffset   Int end offset from original string.
+  * @param `type`      String type of token.
+  * @param position    Int position in the token sequence.
   */
 case class Token(
   token: String,
@@ -378,9 +399,10 @@ case class Token(
 )
 
 /**
-  * Generic trait for an Update response.
+  * Trait for a response to an Update operation.
+  * See the [[https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-update.html Elasticsearch Docs]] for more info.
   */
-trait GenericUpdateResponse {
+trait UpdateResponse {
   def index: String
   def typeName: String
   def id: String
@@ -389,29 +411,31 @@ trait GenericUpdateResponse {
 }
 
 /**
-  * Case class for an Update response from Elasticsearch.
+  * Case class for an [[UpdateResponse]] from Elasticsearch.
   * Note that even if we give these names like "_index" Jackson still won't serialize it automatically.
-  * @param index String ES index name.
+  * See the [[https://www.elastic.co/guide/en/elasticsearch/reference/1.7/docs-update.html Elasticsearch Docs]] for more info.
+  * @version 1.7
+  * @param index    String ES index name.
   * @param typeName String ES type name.
-  * @param id String document id.
-  * @param version Int document version number.
-  * @param created Boolean whether document was created.
+  * @param id       String document id.
+  * @param version  Int document version number.
+  * @param created  Boolean whether document was created.
   */
-case class UpdateResponse(
+case class UpdateResponse_1_7(
   @JsonProperty(EsClient._INDEX) index: String,
   @JsonProperty(EsClient._TYPE) typeName: String,
   @JsonProperty(EsClient._ID) id: String,
   @JsonProperty(EsClient._VERSION) version: Int,
   created: Boolean
-) extends GenericUpdateResponse
+) extends UpdateResponse
 
 
 /**
   * Case class for an Update document action in Elasticsearch.
-  * @param index String ES index name.
+  * @param index    String ES index name.
   * @param typeName String ES type name.
-  * @param id String document id.
-  * @param doc String actual document content to update.
+  * @param id       String document id.
+  * @param doc      String actual document content to update.
   */
 // Update a document by passing the changed fields
 case class UpdateDocAction(index: String, typeName: String, id: String, doc: String) extends Action {
@@ -441,17 +465,19 @@ sealed trait Action {
 
 /**
   * Case class for Elasticsearch Delete action.
-  * @param index String ES index name.
+  * @param index    String ES index name.
   * @param typeName String ES type name.
-  * @param id String document id.
+  * @param id       String document id.
   */
 case class DeleteAction(index: String, typeName: String, id: String) extends Action
 
 /**
   * Case class for Elasticsearch Update Script action.
-  * @param index String ES index name.
+  * @param index    String ES index name.
   * @param typeName String ES type name.
-  * @param id String document id.
-  * @param script String ES update script.
+  * @param id       String document id.
+  * @param script   String ES update script.
   */
-case class UpdateScriptAction(index: String, typeName: String, id: String, script: String) extends Action // Update a document using a script
+case class UpdateScriptAction(index: String, typeName: String, id: String, script: String) extends Action
+
+// Update a document using a script

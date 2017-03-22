@@ -114,7 +114,7 @@ class EsQuerySpec extends EsClientSpec {
 
   behavior of "#get"
   it should "get" in {
-    val response = GetResponse("", "", "", 0, None, Some("""{"prop":"value"}"""), true)
+    val response = GetResponse_1_7("", "", "", 0, None, Some("""{"prop":"value"}"""), true)
     val esResponseJson = """{ "_index": "", "_type": "", "_id": "", "_version": 0, "found": true, "_source": { "prop": "value" } }"""
 
     val esClient = new EsClientWithMockedEs().whenGet(esResponseJson)
@@ -146,7 +146,7 @@ class EsQuerySpec extends EsClientSpec {
   }
 
   it should "return EsError when there's an error" in {
-    val response = EsError("This is an error", 400)
+    val response = EsError_1_7("This is an error", 400)
     val esClient = new EsClientWithMockedEs().whenGet(JsonUtils.toJson(response))
 
     val result = esClient.get("", "")
@@ -166,8 +166,8 @@ class EsQuerySpec extends EsClientSpec {
   it should "get multiple documents" in {
     val response = MultiGetResponse(
       Seq(
-        GetResponse("", "", "a", 0, None, Some("""{"prop":"value"}"""), true),
-        GetResponse("", "", "b", 0, None, Some("""{"prop":"value"}"""), true)
+        GetResponse_1_7("", "", "a", 0, None, Some("""{"prop":"value"}"""), true),
+        GetResponse_1_7("", "", "b", 0, None, Some("""{"prop":"value"}"""), true)
       )
     )
     val esResponseJson =
@@ -187,8 +187,8 @@ class EsQuerySpec extends EsClientSpec {
   it should "get multiple documents with requested field" in {
     val response = MultiGetResponse(
       Seq(
-        GetResponse("", "", "a", 0, None, Some("""{"prop":"value"}"""), true),
-        GetResponse("", "", "b", 0, None, Some("""{"prop":"value"}"""), true)
+        GetResponse_1_7("", "", "a", 0, None, Some("""{"prop":"value"}"""), true),
+        GetResponse_1_7("", "", "b", 0, None, Some("""{"prop":"value"}"""), true)
       )
     )
     val esResponseJson =
@@ -208,8 +208,8 @@ class EsQuerySpec extends EsClientSpec {
   it should "parse get responses with errors" in {
     val response = MultiGetResponse(
       Seq(
-        GetResponse("", "", "a", 0, None, None, false, Some("could not find index")),
-        GetResponse("", "", "b", 0, None, Some("""{"prop":"value"}"""), true)
+        GetResponse_1_7("", "", "a", 0, None, None, false, Some("could not find index")),
+        GetResponse_1_7("", "", "b", 0, None, Some("""{"prop":"value"}"""), true)
       )
     )
     val esResponseJson =

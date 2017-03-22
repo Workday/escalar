@@ -82,25 +82,25 @@ trait EsClusterOps extends JestUtils {
   /**
     * Gets the status for the given Elasticsearch index.
     * @param indexName String ES index name.
-    * @return EsResult of sequence of [[com.workday.esclient.actions.GenericIndexInfo]]
+    * @return EsResult of sequence of [[com.workday.esclient.actions.IndexInfo]]
     */
-  def catIndex(indexName: String) : EsResult[Seq[GenericIndexInfo]] = {
+  def catIndex(indexName: String) : EsResult[Seq[IndexInfo]] = {
     val catAction = buildCatAction(CatAction.CAT_INDICES, indexName)
     val jestResult = jest.execute(catAction)
-    toEsResult[Seq[IndexInfo]](jestResult)
+    toEsResult[Seq[IndexInfo_1_7]](jestResult)
   }
 
   /**
     * Gets the index status for all Elasticsearch indices.
     * Maps to /_cat/indices
     * @throws com.google.gson.stream.MalformedJsonException
-    * @return EsResult of sequence of [[com.workday.esclient.actions.GenericIndexInfo]]
+    * @return EsResult of sequence of [[com.workday.esclient.actions.IndexInfo]]
     */
   @throws(classOf[com.google.gson.stream.MalformedJsonException])
-  def catAllIndices: EsResult[Seq[GenericIndexInfo]] = {
+  def catAllIndices: EsResult[Seq[IndexInfo]] = {
     val catIndices = buildCatIndices()
     val jestResult = jest.execute(catIndices)
-    toEsResult[Seq[IndexInfo]](jestResult)
+    toEsResult[Seq[IndexInfo_1_7]](jestResult)
   }
 
   /**

@@ -2,7 +2,7 @@ package com.workday.esclient.unit
 
 import com.google.gson.{JsonObject, JsonParser}
 import com.workday.esclient.actions.CatAction
-import com.workday.esclient.{AliasAction, AliasInfo, EsClient, GenericAliasInfo}
+import com.workday.esclient.{AliasAction, AliasInfo, EsClient}
 import io.searchbox.action.{AbstractAction, BulkableAction}
 import io.searchbox.client.{JestClient, JestResult}
 import io.searchbox.core._
@@ -63,7 +63,7 @@ object EsClientSpec extends org.scalatest.FlatSpec with org.scalatest.Matchers w
     override def buildBulkAction(actions: Seq[BulkableAction[DocumentResult]]) = BulkMock
     override def buildSearchAction(query: String, index: String, typeName: String, params: Map[String, Any]) = SearchMock
     override def buildCreateIndex(index: String, settings: Option[Map[String, Any]] = None) = CreateIndexMock
-    override def buildModifyAliases(toAdd: Seq[GenericAliasInfo], toRemove: Seq[GenericAliasInfo]) = ModifyAliasesMock
+    override def buildModifyAliases(toAdd: Seq[AliasInfo], toRemove: Seq[AliasInfo]) = ModifyAliasesMock
     override def buildCatAction(catAction: String, indexName: String = "") = CatActionMock
     override def buildCatIndices() = CatIndicesMock
     override def buildGetAliases(index: Option[String]) = GetAliasesMock

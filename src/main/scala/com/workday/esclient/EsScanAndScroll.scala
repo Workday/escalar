@@ -24,9 +24,9 @@ trait EsScanAndScroll extends JestUtils with EsQuery {
   /**
     * Performs a ScanAndScroll search, combines all paged results into an iterator and
     * aggregates each result in the iterator into a single EsResult[EsSearchResponse].
-    * @param index String index to search
-    * @param typeName String index type
-    * @param query String query to perform
+    * @param index             String index to search
+    * @param typeName          String index type
+    * @param query             String query to perform
     * @param scanAndScrollSize Int size of each scan and scroll response
     * @return EsResult[EsSearchResponse] of aggregate result from scan-and-scrolled results
     */
@@ -39,21 +39,20 @@ trait EsScanAndScroll extends JestUtils with EsQuery {
     // Turn ScanAndScroll result into an EsResult
     scanAndScrollResult match {
       case EsResponse(response) => EsResponse(EsSearchResponse(response.took, response.hits, response.aggregations))
-      case e: EsError => e
       case e: EsInvalidResponse => e
-        //$COVERAGE-OFF$
-      case e: GenericEsError => e
-        //$COVERAGE-ON$
+      //$COVERAGE-OFF$
+      case e: EsError => e
+      //$COVERAGE-ON$
     }
   }
 
   /**
     * Does a scan and scroll search and returns an iterator over the results.
     * (https://www.elastic.co/guide/en/elasticsearch/guide/current/scan-scroll.html)
-    * @param index String index to search
+    * @param index    String index to search
     * @param typeName String index type
-    * @param query String query to perform
-    * @param params Map[String,Any] query parameters to include; defaults to empty Map
+    * @param query    String query to perform
+    * @param params   Map[String,Any] query parameters to include; defaults to empty Map
     * @return Iterator over EsResults of SearchHits
     */
   def createScrolledSearchIterator(index: String, typeName: String, query: String, params: Map[String, Any] = Map()): Iterator[EsResult[SearchHits]] = {
@@ -63,14 +62,14 @@ trait EsScanAndScroll extends JestUtils with EsQuery {
 
   /**
     * Creates a scrolled search and returns the Jest response.
-    * @param index String index to search on
+    * @param index    String index to search on
     * @param typeName String type name to search
-    * @param query String query to search on
-    * @param params String params for search query
+    * @param query    String query to search on
+    * @param params   String params for search query
     * @return EsResult of Elasticsearch scan and scroll response
     */
   def createScrolledSearch(index: String, typeName: String = "", query: String, params: Map[String, Any] = Map()): EsResult[ScanAndScrollResponse] = {
-    val jestResult : JestResult = jest.execute(buildScrolledSearchAction(query, index, typeName, params))
+    val jestResult: JestResult = jest.execute(buildScrolledSearchAction(query, index, typeName, params))
     handleScrollResult(jestResult)
   }
 
@@ -80,7 +79,7 @@ trait EsScanAndScroll extends JestUtils with EsQuery {
     * @return EsResult of Elasticsearch scan and scroll response
     */
   def getScrolledSearchResults(scrollID: String): EsResult[ScanAndScrollResponse] = {
-    val jestResult : JestResult = jest.execute(buildGetScrolledSearchResultsAction(scrollID))
+    val jestResult: JestResult = jest.execute(buildGetScrolledSearchResultsAction(scrollID))
     handleScrollResult(jestResult)
   }
 
@@ -101,7 +100,7 @@ trait EsScanAndScroll extends JestUtils with EsQuery {
     * Adds the values of the nextScanAndScrollResult onto the accumulator.
     * If we encounter an error in the scan and scroll search, just return the error and stop accumulating.
     * @param scanAndScrollResultAccumulator tuple of current accumulated results and boolean of whether an error has been encountered already
-    * @param nextScanAndScrollResult the next "page" in the ScanAndScroll search result
+    * @param nextScanAndScrollResult        the next "page" in the ScanAndScroll search result
     * @return the current accumulated response and whether we should continue accumulating
     */
   @VisibleForTesting
@@ -115,7 +114,7 @@ trait EsScanAndScroll extends JestUtils with EsQuery {
           addSearchHits(response1.hits, response2.hits),
           // Take the first non-null aggregation of the responses. Theoretically, only the first page will have an aggregation:
           // https://www.elastic.co/guide/en/elasticsearch/reference/current/search-request-scroll.html
-          if (response1.aggregations.entrySet().isEmpty) response2.aggregations else response1.aggregations,
+          if(response1.aggregations.entrySet().isEmpty) response2.aggregations else response1.aggregations,
           response1.scrollID
         ))
       case (EsResponse(response), e) => e
@@ -135,17 +134,16 @@ trait EsScanAndScroll extends JestUtils with EsQuery {
     // extract the search hits from the ScanAndScrollResponse iterator
     scanAndScrollIter.map {
       case EsResponse(scanAndScrollResponse) => EsResponse(scanAndScrollResponse.hits)
-      case e: EsError => e
       case e: EsInvalidResponse => e
-      case e: GenericEsError => e
+      case e: EsError => e
     }
   }
 
   /**
     * Recursively builds a scan and response iterator starting at current page of the results.
-    * @param resultPage EsResult scan and scroll response of the current "page" in the scroll result
+    * @param resultPage            EsResult scan and scroll response of the current "page" in the scroll result
     * @param forceFetchNextResults Boolean the initial createScrolledSearch() call returns a scrollID with no hits, so in that
-    *                        case only we have to force it to fetch the next results
+    *                              case only we have to force it to fetch the next results
     * @return an iterator of ScanAndScrollResponses
     */
   @VisibleForTesting
@@ -155,16 +153,15 @@ trait EsScanAndScroll extends JestUtils with EsQuery {
     resultPage match {
       case EsResponse(response) =>
         Iterator(EsResponse(response)) ++ {
-          if (forceFetchNextResults || response.hits.hits.nonEmpty) {
+          if(forceFetchNextResults || response.hits.hits.nonEmpty) {
             val nextResult = getScrolledSearchResults(response.scrollID)
             getScrolledSearchIterator(nextResult, false)
           } else {
             Iterator.empty
           }
         }
-      case e: EsError => Iterator(e)
       case e: EsInvalidResponse => Iterator(e)
-      case e: GenericEsError => Iterator(e)
+      case e: EsError => Iterator(e)
     }
   }
 
@@ -199,10 +196,10 @@ trait EsScanAndScroll extends JestUtils with EsQuery {
 
   /**
     * Returns a search action set with given parameters.
-    * @param query String query to be made
-    * @param index String index to query on
+    * @param query    String query to be made
+    * @param index    String index to query on
     * @param typeName String typename to search
-    * @param params Map of params to set
+    * @param params   Map of params to set
     * @return Elasticsearch search action
     */
   @VisibleForTesting
@@ -210,7 +207,7 @@ trait EsScanAndScroll extends JestUtils with EsQuery {
     var searchAction = new Search.Builder(query).addIndex(index)
       .setParameter(Parameters.SCROLL, EsNames.EsScanAndScrollTime)
       .setParameter(Parameters.SIZE, EsNames.EsScanAndScrollSize)
-    if (typeName.nonEmpty) searchAction = searchAction.addType(typeName)
+    if(typeName.nonEmpty) searchAction = searchAction.addType(typeName)
     params.foreach { case (key: String, value: Any) => searchAction.setParameter(key, value) }
     searchAction.build()
   }

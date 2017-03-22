@@ -34,7 +34,7 @@ class EsIndexingMetaSpec extends EsClientSpec {
   behavior of "#createIndex"
   it should "create index" in {
     val mockJestClient = mock[JestClient]
-    val response = Acknowledgement(false)
+    val response = Acknowledgement_1_7(false)
     val esClient = new EsClientWithMockedEs(mockJestClient).whenCreateIndex(JsonUtils.toJson(response))
 
     esClient.createIndex("").get shouldEqual response
@@ -43,7 +43,7 @@ class EsIndexingMetaSpec extends EsClientSpec {
 
   it should "create index with custom setting" in {
     val mockJestClient = mock[JestClient]
-    val response = Acknowledgement(false)
+    val response = Acknowledgement_1_7(false)
     val esClient = new EsClientWithMockedEs(mockJestClient).whenCreateIndex(JsonUtils.toJson(response))
 
     esClient.createIndex("", Option(Map("some_setting" -> "foo"))).get shouldEqual response
@@ -52,7 +52,7 @@ class EsIndexingMetaSpec extends EsClientSpec {
 
   "#deleteIndex" should "execute a DeleteIndex action and pass on the response" in {
     val mockJestClient = mock[JestClient]
-    val response = Acknowledgement(true)
+    val response = Acknowledgement_1_7(true)
     val esClient = new EsClientWithMockedEs(mockJestClient).whenAny(JsonUtils.toJson(response))
 
     esClient.deleteIndex("").get shouldEqual response
@@ -61,7 +61,7 @@ class EsIndexingMetaSpec extends EsClientSpec {
 
   "#closeIndex" should "closeIndex" in {
     val mockJestClient = mock[JestClient]
-    val response = Acknowledgement(false)
+    val response = Acknowledgement_1_7(false)
     val esClient = new EsClientWithMockedEs(mockJestClient).whenAny(JsonUtils.toJson(response))
 
     esClient.closeIndex("").get shouldEqual response

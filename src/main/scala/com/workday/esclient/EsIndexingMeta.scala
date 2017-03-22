@@ -25,9 +25,9 @@ trait EsIndexingMeta extends JestUtils {
     * @param settings Optional map of settings for the index.
     * @return EsResult wrapping an ES acknowledgment.
     */
-  def createIndex(index: String, settings: Option[Map[String, Any]] = None): EsResult[GenericAcknowledgement] = {
+  def createIndex(index: String, settings: Option[Map[String, Any]] = None): EsResult[Acknowledgement] = {
     val jestResult = jest.execute(buildCreateIndex(index, settings))
-    toEsResult[Acknowledgement](jestResult)
+    toEsResult[Acknowledgement_1_7](jestResult)
   }
 
   /**
@@ -35,9 +35,9 @@ trait EsIndexingMeta extends JestUtils {
     * @param index String index to delete from ES.
     * @return EsResult wrapping an ES acknowledgment.
     */
-  def deleteIndex(index: String): EsResult[GenericAcknowledgement] = {
+  def deleteIndex(index: String): EsResult[Acknowledgement] = {
     val jestResult = jest.execute(new DeleteIndex.Builder(index).build())
-    toEsResult[Acknowledgement](jestResult)
+    toEsResult[Acknowledgement_1_7](jestResult)
   }
 
   /**
@@ -46,10 +46,10 @@ trait EsIndexingMeta extends JestUtils {
     * @param index String index to close in ES.
     * @return EsResult wrapping an ES acknowledgment.
     */
-  def closeIndex(index: String): EsResult[GenericAcknowledgement] = {
+  def closeIndex(index: String): EsResult[Acknowledgement] = {
     val closeAction = new CloseIndex.Builder(index).build()
     val jestResult = jest.execute(closeAction)
-    toEsResult[Acknowledgement](jestResult)
+    toEsResult[Acknowledgement_1_7](jestResult)
   }
 
   /**

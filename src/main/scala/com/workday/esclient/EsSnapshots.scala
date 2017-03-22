@@ -40,10 +40,10 @@ trait EsSnapshots extends JestUtils {
     * @param snapshotName String name of snapshot
     * @return EsResult containing an Elasticsearch acknowledgment
     */
-  def snapshotDelete(repositoryName: String, snapshotName: String): EsResult[GenericAcknowledgement] = {
+  def snapshotDelete(repositoryName: String, snapshotName: String): EsResult[Acknowledgement] = {
     val deleteAction = new SnapshotDeleteBuilder(repositoryName, snapshotName).build
     val jestResult = jest.execute(deleteAction)
-    toEsResult[Acknowledgement](jestResult)
+    toEsResult[Acknowledgement_1_7](jestResult)
   }
 
   /**
@@ -93,10 +93,10 @@ trait EsSnapshots extends JestUtils {
     * @param repositorySettings String of repository settings
     * @return EsResult containing an Elasticsearch acknowledgment
     */
-  def repositoryCreate(repositoryName: String, repositorySettings: String): EsResult[GenericAcknowledgement] = {
+  def repositoryCreate(repositoryName: String, repositorySettings: String): EsResult[Acknowledgement] = {
     val createRepositoryAction = new RepositoryCreateBuilder(repositoryName, repositorySettings).build
     val jestResult = jest.execute(createRepositoryAction)
-    toEsResult[Acknowledgement](jestResult)
+    toEsResult[Acknowledgement_1_7](jestResult)
   }
 
   /**
@@ -104,10 +104,10 @@ trait EsSnapshots extends JestUtils {
     * @param repositoryName String name of target repository
     * @return EsResult containing an Elasticsearch acknowledgment
     */
-  def repositoryDelete(repositoryName: String): EsResult[GenericAcknowledgement] = {
+  def repositoryDelete(repositoryName: String): EsResult[Acknowledgement] = {
     val deleteAction = new RepositoryDeleteBuilder(repositoryName).build
     val jestResult = jest.execute(deleteAction)
-    toEsResult[Acknowledgement](jestResult)
+    toEsResult[Acknowledgement_1_7](jestResult)
   }
 
   /**

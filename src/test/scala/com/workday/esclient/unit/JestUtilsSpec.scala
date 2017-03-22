@@ -18,9 +18,9 @@ class JestUtilsSpec extends org.scalatest.FlatSpec with org.scalatest.Matchers w
     jestResult.setJsonString(jsonString)
     jestResult.setJsonObject(jsonObject)
 
-    val expectedResponse = EsResponse(Acknowledgement(true))
+    val expectedResponse = EsResponse(Acknowledgement_1_7(true))
 
-    esClient.toEsResult[Acknowledgement](jestResult) shouldEqual expectedResponse
+    esClient.toEsResult[Acknowledgement_1_7](jestResult) shouldEqual expectedResponse
   }
 
   it should "not break if jsonObject set, but jsonString not set" in {
@@ -31,9 +31,9 @@ class JestUtilsSpec extends org.scalatest.FlatSpec with org.scalatest.Matchers w
     jsonObject.addProperty("acknowledged", true)
     jestResult.setJsonObject(jsonObject)
 
-    val expectedResponse = EsResponse(Acknowledgement(true))
+    val expectedResponse = EsResponse(Acknowledgement_1_7(true))
 
-    esClient.toEsResult[Acknowledgement](jestResult) shouldEqual expectedResponse
+    esClient.toEsResult[Acknowledgement_1_7](jestResult) shouldEqual expectedResponse
   }
 
   it should "not break if neither jsonObject nor jsonString set" in {
@@ -70,7 +70,7 @@ class JestUtilsSpec extends org.scalatest.FlatSpec with org.scalatest.Matchers w
     jestResult.setJsonString(jsonString)
     jestResult.setJsonObject(jsonObject)
 
-    val expectedResponse = JsonUtils.fromJson[EsError](jsonString)
+    val expectedResponse = JsonUtils.fromJson[EsError_1_7](jsonString)
 
     esClient.toEsResult[TestError](jestResult) shouldEqual expectedResponse
   }
@@ -111,7 +111,7 @@ class JestUtilsSpec extends org.scalatest.FlatSpec with org.scalatest.Matchers w
   }
 
   it should "return original result when result is EsError" in {
-    val result: EsResult[Int] = EsError("error", 0)
+    val result: EsResult[Int] = EsError_1_7("error", 0)
     result.map(_ + 1) shouldEqual result
   }
 }

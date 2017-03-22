@@ -22,7 +22,7 @@ trait JestUtils {
   /**
     * @return JestClient
     */
-  def jest: JestClient  // overridden in EsClient.scala with a val
+  def jest: JestClient // overridden in EsClient.scala with a val
 
   /**
     * Returns [[com.workday.esclient.EsResult]][T] from JSON Jest response.
@@ -32,7 +32,7 @@ trait JestUtils {
     * @return EsResult[T]
     */
   @VisibleForTesting
-  def toEsResult[T : Manifest](jestResult: JestResult, allowError: Boolean = false): EsResult[T] = {
+  def toEsResult[T: Manifest](jestResult: JestResult, allowError: Boolean = false): EsResult[T] = {
     handleJestResult(jestResult, allowError) { successfulJestResult =>
       JsonUtils.fromJson[T](successfulJestResult.getJsonString)
     }
@@ -49,9 +49,9 @@ trait JestUtils {
     if(Option(jestResult.getJsonObject).isEmpty && Option(jestResult.getJsonString).isEmpty) {
       EsInvalidResponse("Unable to Parse JSON into the given class because result contains all NULL entries.")
     }
-    else if (!allowError && (Option(jestResult.getJsonObject).nonEmpty && !jestResult.getJsonObject.entrySet().isEmpty)
+    else if(!allowError && (Option(jestResult.getJsonObject).nonEmpty && !jestResult.getJsonObject.entrySet().isEmpty)
       && jestResult.getJsonObject.has("error")) {
-      JsonUtils.fromJson[EsError](jestResult.getJsonString)
+      JsonUtils.fromJson[EsError_1_7](jestResult.getJsonString)
     }
     else {
       try {
@@ -75,17 +75,21 @@ trait JestUtils {
   }
 }
 
-trait GenericAcknowledgement {
+/**
+  * Generic trait for ES acknowledgement responses.
+  */
+trait Acknowledgement {
   def acknowledged: Boolean
 }
 
 /**
   * Case class for acknowledgment EsResults.
+  * @version 1.7
   * @param acknowledged boolean value for acknowledgment
   */
-case class Acknowledgement(
+case class Acknowledgement_1_7(
   acknowledged: Boolean
-) extends GenericAcknowledgement
+) extends Acknowledgement
 
 // We'll likely want to consider adding the original jestResult as a parameter
 /**
@@ -103,27 +107,33 @@ trait EsResult[+T] {
 }
 
 /**
-  * Generic trait for all ES error case classes.
+  * Generic trait for all ES error responses.
   */
-trait GenericEsError extends EsResult[Nothing] {
+trait EsError extends EsResult[Nothing] {
   def get: Nothing
+}
+
+/**
+  * Case class for an Elasticsearch error response.
+  * @version 1.7
+  * @param error  error message
+  * @param status status code
+  * @example ES JSON Response
+  *          {
+  *          "error": "DocumentMissingException[\[test][0] [person][5]: document missing]",
+  *          "status": 404
+  *          }
+  */
+case class EsError_1_7(error: String, status: Int) extends EsError {
+  def get: Nothing = throw new NoSuchElementException(error + ", status " + status)
 }
 
 /**
   * Case class for an Elasticsearch invalid response.
   * @param msg ES response message
   */
-case class EsInvalidResponse(msg: String) extends GenericEsError {
+case class EsInvalidResponse(msg: String) extends EsError {
   def get: Nothing = throw new NoSuchElementException(msg)
-}
-
-/**
-  * Case class for an Elasticsearch error response.
-  * @param error error message
-  * @param status status code
-  */
-case class EsError(error: String, status: Int) extends GenericEsError {
-  def get: Nothing = throw new NoSuchElementException(error + ", status " + status)
 }
 
 /**

@@ -20,7 +20,7 @@ class EsAliasesSpec extends org.scalatest.FlatSpec with org.scalatest.Matchers w
   behavior of "#createAliases"
   it should "create aliases" in {
     val esClient = spy(new EsClient(mock[JestClient]))
-    val expectedResponse = EsResponse(Acknowledgement(true))
+    val expectedResponse = EsResponse(Acknowledgement_1_7(true))
     doReturn(expectedResponse).when(esClient).modifyAliases(any(), any())
 
     esClient.createAliases(toAdd) shouldEqual expectedResponse
@@ -29,7 +29,7 @@ class EsAliasesSpec extends org.scalatest.FlatSpec with org.scalatest.Matchers w
   behavior of "#deleteAliases"
   it should "delete aliases" in {
     val esClient = spy(new EsClient(mock[JestClient]))
-    val expectedResponse = EsResponse(Acknowledgement(true))
+    val expectedResponse = EsResponse(Acknowledgement_1_7(true))
     doReturn(expectedResponse).when(esClient).modifyAliases(any(), any())
 
     esClient.deleteAliases(toRemove) shouldEqual expectedResponse
@@ -38,8 +38,8 @@ class EsAliasesSpec extends org.scalatest.FlatSpec with org.scalatest.Matchers w
   behavior of "#modifyAliases"
   it should "create and delete aliases" in {
     val esClient = spy(new EsClient(mock[JestClient]))
-    val expectedResponse = EsResponse(Acknowledgement(true))
-    doReturn(expectedResponse).when(esClient).toEsResult[Acknowledgement](any(), anyBoolean())(any[Manifest[Acknowledgement]]) // yay implicits...
+    val expectedResponse = EsResponse(Acknowledgement_1_7(true))
+    doReturn(expectedResponse).when(esClient).toEsResult[Acknowledgement_1_7](any(), anyBoolean())(any[Manifest[Acknowledgement_1_7]]) // yay implicits...
 
     esClient.modifyAliases(toAdd, toRemove) shouldEqual expectedResponse
   }

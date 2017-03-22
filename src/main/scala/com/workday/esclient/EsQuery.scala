@@ -32,10 +32,10 @@ trait EsQuery extends JestUtils {
 
   /**
     * Makes a more sophisticated query on Elasticsearch including ES type names and parameters.
-    * @param index String ES index to query.
+    * @param index    String ES index to query.
     * @param typeName String ES type name.
-    * @param query String query content.
-    * @param params Map of params to include in ES request.
+    * @param query    String query content.
+    * @param params   Map of params to include in ES request.
     * @return EsResult wrapping the response from ES.
     */
   def search(index: String, typeName: String = "", query: String, params: Map[String, Any] = Map()): EsResult[EsSearchResponse] = {
@@ -46,27 +46,27 @@ trait EsQuery extends JestUtils {
   /**
     * Makes a get request to Elasticsearch for the given id and index.
     * @param index String index to get from.
-    * @param id String id of document to get.
+    * @param id    String id of document to get.
     * @return EsResult wrapping the response from ES.
     */
-  def get(index: String, id: String): EsResult[GenericGetResponse] = {
+  def get(index: String, id: String): EsResult[GetResponse] = {
     val jestResult = jest.execute(buildGetAction(index, id))
     handleJestResult(jestResult) { successfulJestResult =>
-      JsonUtils.fromJson[GetResponse](successfulJestResult.getJsonString)
+      JsonUtils.fromJson[GetResponse_1_7](successfulJestResult.getJsonString)
     }
   }
 
   /**
     * Makes a multi-get request to Elasticsearch for the given index and ids.
-    * @param index String index to get from.
+    * @param index    String index to get from.
     * @param typeName String ES type name.
-    * @param ids Sequence of ids of documents to get.
-    * @param params Optional map of additional get parameters.
+    * @param ids      Sequence of ids of documents to get.
+    * @param params   Optional map of additional get parameters.
     * @return EsResult wrapping the response from ES.
     */
   def multiGet(index: String, typeName: String, ids: Seq[String], params: Map[String, Any] = Map()): EsResult[MultiGetResponse] = {
     // don't bother hitting elastic search if there are no id's
-    if (ids.isEmpty){
+    if(ids.isEmpty) {
       new EsResponse[MultiGetResponse](new MultiGetResponse(Nil))
     } else {
       val jestResult = jest.execute(buildMultiGetAction(index, typeName, ids.distinct, params))
@@ -81,7 +81,7 @@ trait EsQuery extends JestUtils {
           id.getAsString ->(source, error)
         }
         val sourcesMappedById: Map[String, (Option[String], Option[String])] = docsIterator.map(idAndSourcePair).toMap
-        def copyWithNewSource(getResponse: GetResponse): GetResponse = {
+        def copyWithNewSource(getResponse: GetResponse_1_7): GetResponse_1_7 = {
           sourcesMappedById(getResponse.id) match {
             case (source: Option[String], error: Option[String]) =>
               getResponse.copy(sourceIn = source, error = error)
@@ -94,19 +94,19 @@ trait EsQuery extends JestUtils {
 
   /**
     * Makes a Multi Get request with the "_source" field provided as a parameter.
-    * @param index String index to get from.
+    * @param index    String index to get from.
     * @param typeName String ES type name.
-    * @param ids Sequence of ids of documents to get.
-    * @param field String "_source" field to specify which documents to return source for.
+    * @param ids      Sequence of ids of documents to get.
+    * @param field    String "_source" field to specify which documents to return source for.
     * @return EsResult wrapping the response from ES.
     */
   def multiGetSourceField(index: String, typeName: String, ids: Seq[String], field: String): EsResult[MultiGetResponse] = {
-    multiGet(index, typeName, ids, Map("_source"->field))
+    multiGet(index, typeName, ids, Map("_source" -> field))
   }
 
   /**
     * Gets the count of documents in a given index (or alias) with optional filtering by type.
-    * @param index String index/alias name to get from.
+    * @param index    String index/alias name to get from.
     * @param typeName String optional ES type name (aka sid).
     * @return EsResult wrapping an integer count from ES.
     */
@@ -117,7 +117,9 @@ trait EsQuery extends JestUtils {
       case None => indexBuilder
     }
     val jestResult = jest.execute(builder.build())
-    handleJestResult(jestResult) { _.getCount.toInt }
+    handleJestResult(jestResult) {
+      _.getCount.toInt
+    }
   }
 
   /**
@@ -141,7 +143,7 @@ trait EsQuery extends JestUtils {
       val json = successfulJestResult.getJsonObject
 
       EsSearchResponse(json.get("took").getAsLong, handleHitsInResult(json),
-        if (json.has("aggregations")) json.get("aggregations").getAsJsonObject else new JsonObject
+        if(json.has("aggregations")) json.get("aggregations").getAsJsonObject else new JsonObject
       )
     }
   }
@@ -156,34 +158,40 @@ trait EsQuery extends JestUtils {
   @VisibleForTesting
   private[esclient] def handleHitsInResult(searchJson: JsonObject): SearchHits = {
     val hitsObj = searchJson.get("hits").getAsJsonObject
-    val hitsSeq = if (hitsObj.has("hits")) {
+    val hitsSeq = if(hitsObj.has("hits")) {
       hitsObj.get("hits").getAsJsonArray.iterator().asScala.toSeq.map(hit => {
         val h = hit.getAsJsonObject
         SearchHit(
           // index and typeName are sometimes left out for performance reasons with large result sets
-          index = if (h.has(EsClient._INDEX)) h.get(EsClient._INDEX).getAsString else "",
-          typeName = if (h.has(EsClient._TYPE)) h.get(EsClient._TYPE).getAsString else "",
+          index = if(h.has(EsClient._INDEX)) h.get(EsClient._INDEX).getAsString else "",
+          typeName = if(h.has(EsClient._TYPE)) h.get(EsClient._TYPE).getAsString else "",
           id = h.get(EsClient._ID).getAsString,
-          score = if (h.has(EsClient._SCORE) && !h.get(EsClient._SCORE).isJsonNull) {
+          score = if(h.has(EsClient._SCORE) && !h.get(EsClient._SCORE).isJsonNull) {
             Some(h.get(EsClient._SCORE).getAsDouble)
-          } else { None },
-          source = if (h.has(EsClient._SOURCE)) h.get(EsClient._SOURCE).toString else "", // getting all doc IDs does not give back any fields
+          } else {
+            None
+          },
+          source = if(h.has(EsClient._SOURCE)) h.get(EsClient._SOURCE).toString else "", // getting all doc IDs does not give back any fields
           matchedFields = {
-            if (h.has(EsClient.MATCHED_QUERIES)) {
+            if(h.has(EsClient.MATCHED_QUERIES)) {
               Some(h.get(EsClient.MATCHED_QUERIES).getAsJsonArray.iterator().asScala.toSeq.map {
                 element =>
                   // remove the named query delimiter and everything after it, if it exists
                   val queryName = element.getAsString
                   val delimIndex = queryName.indexOf(EsNames.NAME_QUERY_DELIMITER)
-                  if (delimIndex >= 0) queryName.substring(0, delimIndex) else queryName
+                  if(delimIndex >= 0) queryName.substring(0, delimIndex) else queryName
               })
             }
-            else { None }
+            else {
+              None
+            }
           },
           explain = {
-            if (h.has(EsClient._EXPLANATION)) {
+            if(h.has(EsClient._EXPLANATION)) {
               Some(h.get(EsClient._EXPLANATION).toString)
-            } else { None }
+            } else {
+              None
+            }
           }
         )
       })
@@ -204,10 +212,10 @@ trait EsQuery extends JestUtils {
 
   /**
     * Builds a Search object for use with a Jest client.
-    * @param query String query content.
-    * @param index String index to search from.
+    * @param query    String query content.
+    * @param index    String index to search from.
     * @param typeName String optional ES type name.
-    * @param params Optional map of additional search parameters.
+    * @param params   Optional map of additional search parameters.
     * @return Search object.
     */
   @VisibleForTesting
@@ -217,16 +225,16 @@ trait EsQuery extends JestUtils {
 
   /**
     * Returns a buildable search action for us with a Jest client.
-    * @param index String index to search from.
+    * @param index    String index to search from.
     * @param typeName String optional ES type name.
-    * @param query String query content.
-    * @param params Optional map of additional search parameters.
+    * @param query    String query content.
+    * @param params   Optional map of additional search parameters.
     * @return buildable search action object.
     */
   @VisibleForTesting
   protected def createSearchAction(index: String, typeName: String = "", query: String, params: Map[String, Any] = Map()): Search.Builder = {
     var searchAction = new Search.Builder(query).addIndex(index)
-    if (typeName.nonEmpty) searchAction = searchAction.addType(typeName)
+    if(typeName.nonEmpty) searchAction = searchAction.addType(typeName)
     params.foreach { case (key: String, value: Any) => searchAction.setParameter(key, value) }
     searchAction
   }
@@ -234,7 +242,7 @@ trait EsQuery extends JestUtils {
   /**
     * Returns a Get object for use with a Jest client.
     * @param index String index to get from.
-    * @param id String id of document to get.
+    * @param id    String id of document to get.
     * @return Get object.
     */
   @VisibleForTesting
@@ -243,10 +251,10 @@ trait EsQuery extends JestUtils {
 
   /**
     * Returns a MultiGet object for use with a Jest client.
-    * @param index String index to get from.
+    * @param index    String index to get from.
     * @param typeName String ES type name.
-    * @param ids Sequence of ids of documents to get.
-    * @param params Optional map of additional parameters.
+    * @param ids      Sequence of ids of documents to get.
+    * @param params   Optional map of additional parameters.
     * @return MultiGet object.
     */
   @VisibleForTesting
@@ -260,7 +268,7 @@ trait EsQuery extends JestUtils {
 /**
   * Search Response trait for wrapping ES response data
   */
-trait SearchResponse{
+trait SearchResponse {
   def took: Long
   def hits: SearchHits
   def aggregations: JsonObject
@@ -269,8 +277,8 @@ trait SearchResponse{
 /**
   * Case class of SearchResponse for ES responses
   * We may want to grab more properties in the future
-  * @param took Long the amount of time taken by the query within ES, in milliseconds
-  * @param hits SearchHits from ES.
+  * @param took         Long the amount of time taken by the query within ES, in milliseconds
+  * @param hits         SearchHits from ES.
   * @param aggregations JsonObject for any search aggregations.
   */
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -282,10 +290,10 @@ case class EsSearchResponse(
 
 /**
   * Case class for a scan and scroll response
-  * @param took Long the amount of time taken by the query within ES, in milliseconds
-  * @param hits SearchHits from ES.
+  * @param took         Long the amount of time taken by the query within ES, in milliseconds
+  * @param hits         SearchHits from ES.
   * @param aggregations JsonObject for any search aggregations.
-  * @param scrollID String id for retrieving next batch of results.
+  * @param scrollID     String id for retrieving next batch of results.
   */
 case class ScanAndScrollResponse(
   took: Long,
@@ -296,9 +304,9 @@ case class ScanAndScrollResponse(
 
 /**
   * Case class for wrapping search hits from ES.
-  * @param total Int total number of hits.
+  * @param total    Int total number of hits.
   * @param maxScore Double max score of the hits.
-  * @param hits Sequence of actual SearchHit objects.
+  * @param hits     Sequence of actual SearchHit objects.
   */
 case class SearchHits(
   total: Int,
@@ -308,13 +316,13 @@ case class SearchHits(
 
 /**
   * Case class for wrapping an individual search hit from ES.
-  * @param index String ES index.
-  * @param typeName String ES type name.
-  * @param id String id of document.
-  * @param score Double score of document.
-  * @param source String actual document source.
+  * @param index         String ES index.
+  * @param typeName      String ES type name.
+  * @param id            String id of document.
+  * @param score         Double score of document.
+  * @param source        String actual document source.
   * @param matchedFields Optional sequence of matched fields
-  * @param explain Optional string of ES explanations for the document.
+  * @param explain       Optional string of ES explanations for the document.
   */
 case class SearchHit(
   index: String,
@@ -328,8 +336,9 @@ case class SearchHit(
 
 /**
   * Generic trait for an Elasticsearch Get response.
+  * See the [[https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-get.html Elasticsearch Docs]] for more info.
   */
-trait GenericGetResponse {
+trait GetResponse {
   def index: String
   def typeName: String
   def id: String
@@ -344,19 +353,20 @@ trait GenericGetResponse {
 
 /**
   * Case class for a Get response from Elasticsearch.
-  * TODO: version needs to be an Option.  If a doc id is not found, version is missing from the get response.
-  * Today, Jackson is giving us 0 for version when the doc is not found.
-  * @param index String ES index.
-  * @param typeName String ES type name.
-  * @param id String document id.
-  * @param version Int version for the document.
+  * See the [[https://www.elastic.co/guide/en/elasticsearch/reference/1.7/docs-get.html Elasticsearch Docs]] for more info.
+  * @todo TODO: version needs to be an Option. If a doc id is not found, version is missing from the get response.
+  *       Today, Jackson is giving us 0 for version when the doc is not found.
+  * @version 1.7
+  * @param index      String ES index.
+  * @param typeName   String ES type name.
+  * @param id         String document id.
+  * @param version    Int version for the document.
   * @param sourceJson JsonNode representing original source.
-  * @param sourceIn Optional string for source. Defaults to None.
-  * @param found Boolean whether document was found by ES.
-  * @param error Optional string for an ES error response.
+  * @param sourceIn   Optional string for source. Defaults to None.
+  * @param found      Boolean whether document was found by ES.
+  * @param error      Optional string for an ES error response.
   */
-// Mapping for ES Get API (https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-get.html)
-case class GetResponse(
+case class GetResponse_1_7(
   @JsonProperty(EsClient._INDEX) index: String,
   @JsonProperty(EsClient._TYPE) typeName: String,
   @JsonProperty(EsClient._ID) id: String,
@@ -365,9 +375,10 @@ case class GetResponse(
   sourceIn: Option[String] = None,
   found: Boolean,
   error: Option[String] = None
-) extends GenericGetResponse {
-  lazy val source: Option[String] = sourceJson.map(JsonUtils.toJson(_)).orElse(sourceIn) // convert json to string
-  def foundVersion: Option[Int] = if (found) Some(version) else None
+) extends GetResponse {
+  lazy val source: Option[String] = sourceJson.map(JsonUtils.toJson(_)).orElse(sourceIn)
+  // convert json to string
+  def foundVersion: Option[Int] = if(found) Some(version) else None
 }
 
 /**
@@ -375,5 +386,5 @@ case class GetResponse(
   * @param docs Sequence of Get responses.
   */
 case class MultiGetResponse(
-  docs: Seq[GetResponse]
+  docs: Seq[GetResponse_1_7]
 )

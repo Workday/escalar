@@ -86,7 +86,7 @@ class EsClusterOpsSpec extends EsClientSpec {
     val response = Seq(indexStatus)
 
     val esClient = new EsClientWithMockedEs(mockJestClient).whenCatAction(JsonUtils.toJson(response))
-    val result : Seq[GenericIndexInfo] = esClient.catIndex("index1").get
+    val result : Seq[IndexInfo] = esClient.catIndex("index1").get
     result.length shouldEqual 1
     result(0).index shouldEqual "index1"
     result(0).status shouldEqual "open"
@@ -117,7 +117,7 @@ class EsClusterOpsSpec extends EsClientSpec {
     val response = Seq(indexOneStatus, indexTwoStatus)
 
     val esClient = new EsClientWithMockedEs(mockJestClient).whenCatIndices(JsonUtils.toJson(response))
-    val result : Seq[GenericIndexInfo] = esClient.catAllIndices.get
+    val result : Seq[IndexInfo] = esClient.catAllIndices.get
     result.length shouldEqual 2
     result(0).index shouldEqual "index1"
     result(1).index shouldEqual "index2"

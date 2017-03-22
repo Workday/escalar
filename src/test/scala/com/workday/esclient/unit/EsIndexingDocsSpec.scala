@@ -18,8 +18,8 @@ class EsIndexingDocsSpec extends EsClientSpec {
 
   behavior of "#index"
   it should "index a doc" in {
-    val response = UpdateResponse("", "", "", 1, false)
-    val createIndexResponse = Acknowledgement(false)
+    val response = UpdateResponse_1_7("", "", "", 1, false)
+    val createIndexResponse = Acknowledgement_1_7(false)
     val esClient = new EsClientWithMockedEs()
       .whenCreateIndex(JsonUtils.toJson(createIndexResponse))
       .whenUpdate(JsonUtils.toJson(response))
@@ -46,7 +46,7 @@ class EsIndexingDocsSpec extends EsClientSpec {
   behavior of "#bulkWithRetry"
   it should "not retry if bulk succeeds" in {
     val esClient = spy(new EsClient(mock[JestClient]))
-    val goodItem = BulkUpdateItemResponse(index = "test", typeName = "type", id = "id", version = 1, status = 200, error = None)
+    val goodItem = BulkUpdateItemResponse_1_7(index = "test", typeName = "type", id = "id", version = 1, status = 200, error = None)
     val goodResult = EsResponse(BulkResponse(errors = false, items = Seq(goodItem, goodItem)))
     doReturn(goodResult).when(esClient).bulk(any[Seq[UpdateDocAction]])
     doReturn(10).when(esClient).getSleepTimeForBackpressure // We don't want our tests to actually wait for long
@@ -70,7 +70,7 @@ class EsIndexingDocsSpec extends EsClientSpec {
 
   it should "handle EsInvalidResponse on second try" in {
     val esClient = spy(new EsClient(mock[JestClient]))
-    val badItem = BulkUpdateItemResponse(index = "test", typeName = "type", id = "0", version = 1, status = 429, error = Some("Backpressure"))
+    val badItem = BulkUpdateItemResponse_1_7(index = "test", typeName = "type", id = "0", version = 1, status = 429, error = Some("Backpressure"))
     val badResult = EsResponse(BulkResponse(errors = false, items = Seq(badItem, badItem)))
     val invalidResponse = EsInvalidResponse(msg = "Oops")
     doReturn(badResult).doReturn(invalidResponse).when(esClient).bulk(any[Seq[UpdateDocAction]])
@@ -82,19 +82,19 @@ class EsIndexingDocsSpec extends EsClientSpec {
     verify(esClient, times(2)).bulk(any[Seq[UpdateDocAction]])
   }
 
-  it should "handle EsError" in {
+  it should "handle EsError_1_7" in {
     val esClient = spy(new EsClient(mock[JestClient]))
-    val errorResponse = EsError(error = "Something happened", status = 500)
+    val errorResponse = EsError_1_7(error = "Something happened", status = 500)
     doReturn(errorResponse).when(esClient).bulk(any[Seq[UpdateDocAction]])
 
     val updateAction = UpdateDocAction("", "", "", "{}")
     val actions = Seq(updateAction, updateAction)
-    esClient.bulkWithRetry(actions) shouldBe an[EsError]
+    esClient.bulkWithRetry(actions) shouldBe an[EsError_1_7]
     verify(esClient, times(1)).bulk(any[Seq[UpdateDocAction]])
   }
 
-  it should "handle GenericEsError" in {
-    case class newEsError(error: String, status: Int) extends GenericEsError {
+  it should "handle EsError" in {
+    case class newEsError(error: String, status: Int) extends EsError {
       def get: Nothing = throw new NoSuchElementException(error + ", status " + status)
     }
     val esClient = spy(new EsClient(mock[JestClient]))
@@ -111,7 +111,7 @@ class EsIndexingDocsSpec extends EsClientSpec {
     val esClient = spy(new EsClient(mock[JestClient]))
     val updateAction = UpdateDocAction("", "", "", "{}")
     val actions = Seq(updateAction, updateAction)
-    val badItem = BulkUpdateItemResponse(index = "test", typeName = "type", id = "0", version = 1, status = 429, error = Some("Backpressure"))
+    val badItem = BulkUpdateItemResponse_1_7(index = "test", typeName = "type", id = "0", version = 1, status = 429, error = Some("Backpressure"))
     val badResult = EsResponse(BulkResponse(errors = false, items = Seq(badItem, badItem)))
     doReturn(badResult).when(esClient).bulk(any[Seq[UpdateDocAction]])
     esClient.bulkWithRetry(actions, depth = 0) shouldBe badResult
@@ -129,7 +129,7 @@ class EsIndexingDocsSpec extends EsClientSpec {
     val mockJestClient = mock[JestClient]
     val esClient = new EsClientWithMockedEs(mockJestClient).whenBulk("""{"errors": false, "items":[{ "delete": {"_index":"","_type":"","_id":"","_version":0,"status":0,"found":false}}]}""")
     val actions = Seq(DeleteAction("", "", ""))
-    esClient.bulk(actions).get shouldEqual new BulkResponse(false, Seq(BulkDeleteItemResponse("", "", "", 0, 0, false)))
+    esClient.bulk(actions).get shouldEqual new BulkResponse(false, Seq(BulkDeleteItemResponse_1_7("", "", "", 0, 0, false)))
     verify(mockJestClient, times(1)).execute(any[Bulk])
     verifyNoMoreInteractions(mockJestClient)
   }
@@ -148,9 +148,9 @@ class EsIndexingDocsSpec extends EsClientSpec {
     val esClient = new EsClientWithMockedEs()
       .whenBulk(bulkResponseJson)
       .whenMultiGet(multiGetResponseJson)
-      .whenCreateIndex(JsonUtils.toJson(Acknowledgement(false)))
+      .whenCreateIndex(JsonUtils.toJson(Acknowledgement_1_7(false)))
 
-    val response = BulkResponse(false, Seq(BulkUpdateItemResponse("", "", "", 0, 0), BulkDeleteItemResponse("", "", "", 0, 0, false)))
+    val response = BulkResponse(false, Seq(BulkUpdateItemResponse_1_7("", "", "", 0, 0), BulkDeleteItemResponse_1_7("", "", "", 0, 0, false)))
     val actions = Seq(
       UpdateDocAction("", "", "", "{}"), // this action should be performed
       DeleteAction("", "", ""), // so should this one
@@ -184,9 +184,9 @@ class EsIndexingDocsSpec extends EsClientSpec {
 
     val esClient = new EsClientWithMockedEs()
       .whenBulk(bulkResponseJson)
-      .whenCreateIndex(JsonUtils.toJson(Acknowledgement(false)))
+      .whenCreateIndex(JsonUtils.toJson(Acknowledgement_1_7(false)))
 
-    val response = BulkResponse(false, Seq(BulkUpdateItemResponse("", "", "", 0, 0), BulkUpdateItemResponse("", "", "", 0, 0)))
+    val response = BulkResponse(false, Seq(BulkUpdateItemResponse_1_7("", "", "", 0, 0), BulkUpdateItemResponse_1_7("", "", "", 0, 0)))
     val actions = Seq(
       UpdateScriptAction("index", "type", "docID", "script1"),
       UpdateScriptAction("index", "type2", "docID2", "script2"))
@@ -271,14 +271,14 @@ class EsIndexingDocsSpec extends EsClientSpec {
 
   behavior of "#BulkItemResponse"
   it should "show error for status code of => 400" in {
-    val badBulkIndex = new BulkUpdateItemResponse("", "", "", 0, 401)
-    badBulkIndex.hasError shouldBe true
+    val badBulkIndex = new BulkUpdateItemResponse_1_7("", "", "", 0, 401)
+    badBulkIndex.hasHttpError shouldBe true
 
-    val badBulkDelete = new BulkDeleteItemResponse("", "", "", 0, 400, false)
-    badBulkDelete.hasError shouldBe true
+    val badBulkDelete = new BulkDeleteItemResponse_1_7("", "", "", 0, 400, false)
+    badBulkDelete.hasHttpError shouldBe true
 
-    val goodBulkIndex = new BulkUpdateItemResponse("", "", "", 0, 200)
-    goodBulkIndex.hasError shouldBe false
+    val goodBulkIndex = new BulkUpdateItemResponse_1_7("", "", "", 0, 200)
+    goodBulkIndex.hasHttpError shouldBe false
   }
 }
 

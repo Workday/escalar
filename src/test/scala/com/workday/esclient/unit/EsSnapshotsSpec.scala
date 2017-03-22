@@ -2,7 +2,7 @@ package com.workday.esclient.unit
 
 import com.workday.esclient.actions._
 import com.workday.esclient.unit.EsClientSpec.EsClientWithMockedEs
-import com.workday.esclient.{AcceptResponse, Acknowledgement, JsonUtils, SnapshotResponse}
+import com.workday.esclient.{AcceptResponse, Acknowledgement_1_7, JsonUtils, SnapshotResponse}
 import io.searchbox.client.JestClient
 import org.mockito.Matchers.any
 import org.mockito.Mockito.verify
@@ -33,7 +33,7 @@ class EsSnapshotsSpec extends EsClientSpec {
   behavior of "#snapshotDelete"
   it should "delete a snapshot" in {
     val mockJestClient = mock[JestClient]
-    val response = Acknowledgement(true)
+    val response = Acknowledgement_1_7(true)
     val esClient = new EsClientWithMockedEs(mockJestClient).whenAny(JsonUtils.toJson(response))
 
     esClient.snapshotDelete(TEST_REPOSITORY, TEST_SNAPSHOT).get shouldEqual response
@@ -80,7 +80,7 @@ class EsSnapshotsSpec extends EsClientSpec {
   behavior of "#repositoryCreate"
   it should "create a repository" in {
     val mockJestClient = mock[JestClient]
-    val response = Acknowledgement(true)
+    val response = Acknowledgement_1_7(true)
     val esClient = new EsClientWithMockedEs(mockJestClient).whenAny(JsonUtils.toJson(response))
 
     esClient.repositoryCreate(TEST_REPOSITORY, "foo").get shouldEqual response
@@ -90,7 +90,7 @@ class EsSnapshotsSpec extends EsClientSpec {
   behavior of "#repositoryDelete"
   it should "delete a repository" in {
     val mockJestClient = mock[JestClient]
-    val response = Acknowledgement(true)
+    val response = Acknowledgement_1_7(true)
     val esClient = new EsClientWithMockedEs(mockJestClient).whenAny(JsonUtils.toJson(response))
 
     esClient.repositoryDelete(TEST_REPOSITORY).get shouldEqual response

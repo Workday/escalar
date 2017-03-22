@@ -10,7 +10,7 @@ import io.searchbox.params.Parameters
 import org.mockito.Mockito.when
 
 class EsScanAndScrollSpec extends EsClientSpec {
-  case class NewEsError(error: String, status: Int) extends GenericEsError {
+  case class NewEsError(error: String, status: Int) extends EsError {
     def get: Nothing = throw new NoSuchElementException(error + ", status " + status)
   }
 
@@ -39,7 +39,7 @@ class EsScanAndScrollSpec extends EsClientSpec {
 
   it should "search for unlimited results should result in an EsError" in {
     val scrollId = "something"
-    val expectedResponse = EsError("ERROR", 1)
+    val expectedResponse = EsError_1_7("ERROR", 1)
     val esResponseJson = s"""{"_scroll_id": $scrollId, "took": 77, "hits": { "total": 1, "max_score": 0.0, "hits": [{ "_id": "", "_score": 0.0 }] } }"""
     val esResponseJson2 = s"""{"error": "ERROR", "status": 1}"""
 
@@ -284,7 +284,7 @@ class EsScanAndScrollSpec extends EsClientSpec {
 
   behavior of "#accumulateScanAndScrollResponses"
   it should "return some errors when accumulating unlimited if it gets an EsError in one of the pages" in {
-    val response = EsError("error", 1)
+    val response = EsError_1_7("error", 1)
     val expectedBadRequestResponse = EsInvalidResponse("error")
     val esResponseJson = s"""{"error" : "error", "status" : 1 }"""
 
@@ -297,7 +297,7 @@ class EsScanAndScrollSpec extends EsClientSpec {
   behavior of "#getScrolledSearchHitsIterator"
   it should "return an iterator of results hits with errors" in {
     val esClient = new EsClientWithMockedEs()
-    esClient.getScrolledSearchHitsIterator(EsError("error", 1)).toSeq shouldEqual Seq(EsError("error", 1))
+    esClient.getScrolledSearchHitsIterator(EsError_1_7("error", 1)).toSeq shouldEqual Seq(EsError_1_7("error", 1))
     esClient.getScrolledSearchHitsIterator(EsInvalidResponse("error")).toSeq shouldEqual Seq(EsInvalidResponse("error"))
     esClient.getScrolledSearchHitsIterator(NewEsError("error", 1)).toSeq shouldEqual Seq(NewEsError("error", 1))
   }
@@ -305,7 +305,7 @@ class EsScanAndScrollSpec extends EsClientSpec {
   behavior of "#getScrolledSearchIterator"
   it should "return an iterator of results with errors" in {
     val esClient = new EsClientWithMockedEs()
-    esClient.getScrolledSearchIterator(EsError("error", 1)).toSeq shouldEqual Seq(EsError("error", 1))
+    esClient.getScrolledSearchIterator(EsError_1_7("error", 1)).toSeq shouldEqual Seq(EsError_1_7("error", 1))
     esClient.getScrolledSearchIterator(EsInvalidResponse("error")).toSeq shouldEqual Seq(EsInvalidResponse("error"))
     esClient.getScrolledSearchIterator(NewEsError("error", 1)).toSeq shouldEqual Seq(NewEsError("error", 1))
   }
