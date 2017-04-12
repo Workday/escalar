@@ -24,26 +24,14 @@ object EsQueryHelpers {
   }
 
   /**
-    * Returns a Range map of comparator keys and values for the search Range Elasticsearch API.
-    * Acceptable comparator key values for "terms": gte, gt, lte, lt.
-    * @param field String field to compare range on.
-    * @param terms Map of comparator Strings and associated Long values.
-    * @return Map of comparator keys and values.
-    */
-  def range(field: String, terms: Map[String, Long]): Option[Map[String, Map[String, Any]]] = {
-    Some(Map("range" -> Map(
-      field -> terms
-    )))
-  }
-
-  /**
     * Returns a map for making Range Elasticsearch queries.
     * @param fieldName String field name to query on.
     * @param lowerBound Tuple of ComparisonOp for lower bound and Double value for lower bound of range.
     * @param upperBound Optional Tuple of ComparisonOp for upper bound and Double value for upper bound of range.
+    * @tparam T Implicit Numeric.
     * @return Combined map for making Range queries.
     */
-  def range(fieldName: String, lowerBound: (ComparisonOp, Double), upperBound: Option[(ComparisonOp, Double)] = None): Option[Map[String, Any]] = {
+  def range[T: Numeric](fieldName: String, lowerBound: (ComparisonOp, T), upperBound: Option[(ComparisonOp, T)] = None): Option[Map[String, Any]] = {
     val range = Map(lowerBound._1.op -> lowerBound._2) ++ upperBound.map(bound => bound._1.op -> bound._2)
     Some(Map("range" -> Map(fieldName -> range)))
   }
