@@ -40,7 +40,7 @@ class EsQueryHelpersSpec extends org.scalatest.FlatSpec with org.scalatest.Match
   }
 
   "#range" should "return Some map with proper values with appropriate range terms" in {
-    EsQueryHelpers.range(testField, Map("range1" -> 1, "range2" -> 2)) shouldBe Some(Map("range" -> Map(testField -> Map("range1" -> 1, "range2" -> 2))))
+    EsQueryHelpers.range(testField, Map("range1" -> 1l, "range2" -> 2l)) shouldBe Some(Map("range" -> Map(testField -> Map("range1" -> 1, "range2" -> 2))))
   }
 
   "#termsFromLookup" should "return Some map with lookup values" in {
@@ -306,7 +306,7 @@ class EsQueryHelpersSpec extends org.scalatest.FlatSpec with org.scalatest.Match
   behavior of "range"
 
   it should "have lower and upper bound" in {
-    EsQueryHelpers.range("field", Some(5), gte, Some(10), lt) shouldBe
+    EsQueryHelpers.range("field", (gte, 5), Some(lt, 10)) shouldBe
       Some(
         Map("range" ->
           Map("field" ->
@@ -318,7 +318,7 @@ class EsQueryHelpersSpec extends org.scalatest.FlatSpec with org.scalatest.Match
   }
 
   it should "have only a lower bound" in {
-    EsQueryHelpers.range("field", Some(5), gte, None, lt) shouldBe
+    EsQueryHelpers.range("field", (gte, 5)) shouldBe
       Some(
         Map("range" ->
           Map("field" ->
@@ -328,19 +328,8 @@ class EsQueryHelpersSpec extends org.scalatest.FlatSpec with org.scalatest.Match
       )
   }
 
-  it should "have only an upper bound" in {
-    EsQueryHelpers.range("field", None, gte, Some(10), lt) shouldBe
-      Some(
-        Map("range" ->
-          Map("field" ->
-            Map("lt" -> 10.0)
-          )
-        )
-      )
-  }
-
   it should "have inclusive lower and exclusive upper bound" in {
-    EsQueryHelpers.range("field", Some(20), gt, Some(30), lte) shouldBe
+    EsQueryHelpers.range("field", (gt, 20), Some(lte, 30)) shouldBe
       Some(
         Map("range" ->
           Map("field" ->
@@ -349,9 +338,5 @@ class EsQueryHelpersSpec extends org.scalatest.FlatSpec with org.scalatest.Match
           )
         )
       )
-  }
-
-  it should " be empty" in {
-    EsQueryHelpers.range("field", None, gte, None, lt) shouldBe None
   }
 }

@@ -37,6 +37,18 @@ object EsQueryHelpers {
   }
 
   /**
+    * Returns a map for making Range Elasticsearch queries.
+    * @param fieldName String field name to query on.
+    * @param lowerBound Tuple of ComparisonOp for lower bound and Double value for lower bound of range.
+    * @param upperBound Optional Tuple of ComparisonOp for upper bound and Double value for upper bound of range.
+    * @return Combined map for making Range queries.
+    */
+  def range(fieldName: String, lowerBound: (ComparisonOp, Double), upperBound: Option[(ComparisonOp, Double)] = None): Option[Map[String, Any]] = {
+    val range = Map(lowerBound._1.op -> lowerBound._2) ++ upperBound.map(bound => bound._1.op -> bound._2)
+    Some(Map("range" -> Map(fieldName -> range)))
+  }
+
+  /**
     * Returns a Term map of a field key and values for the search Term Elasticsearch API.
     * @param field String field name for the term.
     * @param ts Any type value to associate with field.
@@ -419,21 +431,6 @@ object EsQueryHelpers {
         boost.map("boost" -> _)
       ).flatten.toMap
     ))
-  }
-
-  /**
-    * Returns a map for making Range Elasticsearch queries.
-    * @param fieldName String field name to query on.
-    * @param lowerBound Double value for lower bound of range.
-    * @param lowerBoundOp Comparison op for lower bound.
-    * @param upperBound Double value for upper bound of range.
-    * @param upperBoundOp Comparison op for upper bound.
-    * @return Combined map for making Range queries.
-    */
-  def range(fieldName: String, lowerBound: Option[Double], lowerBoundOp: ComparisonOp,
-            upperBound: Option[Double], upperBoundOp: ComparisonOp): Option[Map[String, Any]] = {
-    val range = Seq(lowerBound.map(lowerBoundOp.op -> _), upperBound.map(upperBoundOp.op -> _)).flatten.toMap
-    if (range.isEmpty) None else Some(Map("range" -> Map(fieldName -> range)))
   }
 }
 
