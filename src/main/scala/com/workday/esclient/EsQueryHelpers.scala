@@ -435,6 +435,10 @@ object EsQueryHelpers {
     val range = Seq(lowerBound.map(lowerBoundOp.op -> _), upperBound.map(upperBoundOp.op -> _)).flatten.toMap
     if (range.isEmpty) None else Some(Map("range" -> Map(fieldName -> range)))
   }
+
+  def exists(fieldName: String): Option[Map[String, Any]] = Some(Map("exists" -> Map("field" -> fieldName)))
+
+  def missing(fieldName: String): Option[Map[String, Any]] = Some(Map("missing" -> Map("field" -> fieldName)))
 }
 
 // scalastyle:on

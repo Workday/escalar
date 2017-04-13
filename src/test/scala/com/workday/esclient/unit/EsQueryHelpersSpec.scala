@@ -1,6 +1,6 @@
 package com.workday.esclient.unit
 
-import com.workday.esclient.{EsQueryHelpers, gte, lt, gt, lte}
+import com.workday.esclient.{EsQueryHelpers, gt, gte, lt, lte}
 
 class EsQueryHelpersSpec extends org.scalatest.FlatSpec with org.scalatest.Matchers with org.scalatest.BeforeAndAfterAll
   with org.scalatest.BeforeAndAfterEach with org.scalatest.mock.MockitoSugar  {
@@ -353,5 +353,13 @@ class EsQueryHelpersSpec extends org.scalatest.FlatSpec with org.scalatest.Match
 
   it should " be empty" in {
     EsQueryHelpers.range("field", None, gte, None, lt) shouldBe None
+  }
+
+  "#exists" should "create an exists filter" in {
+    EsQueryHelpers.exists("field1") shouldBe Some(Map("exists" -> Map("field" -> "field1")))
+  }
+
+  "#missing" should "create a missing filter" in {
+    EsQueryHelpers.missing("field1") shouldBe Some(Map("missing" -> Map("field" -> "field1")))
   }
 }
