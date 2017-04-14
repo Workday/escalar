@@ -24,16 +24,16 @@ object EsQueryHelpers {
   }
 
   /**
-    * Returns a Range map of comparator keys and values for the search Range Elasticsearch API.
-    * Acceptable comparator key values for "terms": gte, gt, lte, lt.
-    * @param field String field to compare range on.
-    * @param terms Map of comparator Strings and associated Long values.
-    * @return Map of comparator keys and values.
+    * Returns a map for making Range Elasticsearch queries.
+    * @param fieldName String field name to query on.
+    * @param lowerBound Tuple of ComparisonOp for lower bound and Double value for lower bound of range.
+    * @param upperBound Optional Tuple of ComparisonOp for upper bound and Double value for upper bound of range.
+    * @tparam T Implicit Numeric.
+    * @return Combined map for making Range queries.
     */
-  def range(field: String, terms: Map[String, Long]): Option[Map[String, Map[String, Any]]] = {
-    Some(Map("range" -> Map(
-      field -> terms
-    )))
+  def range[T: Numeric](fieldName: String, lowerBound: (ComparisonOp, T), upperBound: Option[(ComparisonOp, T)] = None): Option[Map[String, Any]] = {
+    val range = Map(lowerBound._1.op -> lowerBound._2) ++ upperBound.map(bound => bound._1.op -> bound._2)
+    Some(Map("range" -> Map(fieldName -> range)))
   }
 
   /**
@@ -419,21 +419,6 @@ object EsQueryHelpers {
         boost.map("boost" -> _)
       ).flatten.toMap
     ))
-  }
-
-  /**
-    * Returns a map for making Range Elasticsearch queries.
-    * @param fieldName String field name to query on.
-    * @param lowerBound Double value for lower bound of range.
-    * @param lowerBoundOp Comparison op for lower bound.
-    * @param upperBound Double value for upper bound of range.
-    * @param upperBoundOp Comparison op for upper bound.
-    * @return Combined map for making Range queries.
-    */
-  def range(fieldName: String, lowerBound: Option[Double], lowerBoundOp: ComparisonOp,
-            upperBound: Option[Double], upperBoundOp: ComparisonOp): Option[Map[String, Any]] = {
-    val range = Seq(lowerBound.map(lowerBoundOp.op -> _), upperBound.map(upperBoundOp.op -> _)).flatten.toMap
-    if (range.isEmpty) None else Some(Map("range" -> Map(fieldName -> range)))
   }
 }
 
