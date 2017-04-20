@@ -24,14 +24,14 @@ trait EsAliases extends JestUtils {
     * @param aliases Sequence of aliases including alias names and indices to map to.
     * @return EsResult wrapping an ES acknowledgment.
     */
-  def createAliases(aliases: Seq[AliasInfo]): EsResult[Acknowledgement] = modifyAliases(aliases, Nil)
+  def createAliases(aliases: Seq[GenericAliasInfo]): EsResult[GenericAcknowledgement] = modifyAliases(aliases, Nil)
 
   /**
     * Deletes aliases from Elasticsearch.
     * @param aliases Sequence of aliases including alias names and indices to map to.
     * @return EsResult wrapping an ES acknowledgment.
     */
-  def deleteAliases(aliases: Seq[AliasInfo]): EsResult[Acknowledgement] = modifyAliases(Nil, aliases)
+  def deleteAliases(aliases: Seq[GenericAliasInfo]): EsResult[GenericAcknowledgement] = modifyAliases(Nil, aliases)
 
   /**
     * Returns an AliasAction object to alter aliases in Elasticsearch.
@@ -40,7 +40,7 @@ trait EsAliases extends JestUtils {
     * @return AliasAction object.
     */
   @VisibleForTesting
-  private[esclient] def buildModifyAliases(toAdd: Seq[AliasInfo], toRemove: Seq[AliasInfo]): AliasAction = {
+  private[esclient] def buildModifyAliases(toAdd: Seq[GenericAliasInfo], toRemove: Seq[GenericAliasInfo]): AliasAction = {
     new AliasBuilder(toAdd, toRemove).build
   }
 
@@ -50,7 +50,7 @@ trait EsAliases extends JestUtils {
     * @param toRemove Sequences of aliases to remove from ES>
     * @return EsResult wrapping an ES acknowledgment.
     */
-  def modifyAliases(toAdd: Seq[AliasInfo], toRemove: Seq[AliasInfo]): EsResult[Acknowledgement] = {
+  def modifyAliases(toAdd: Seq[GenericAliasInfo], toRemove: Seq[GenericAliasInfo]): EsResult[GenericAcknowledgement] = {
     val jestResult = jest.execute(buildModifyAliases(toAdd, toRemove))
     toEsResult[Acknowledgement](jestResult)
   }
@@ -59,15 +59,15 @@ trait EsAliases extends JestUtils {
     * Cats all Elasticsearch alias info and returns an EsResult wrapping alias information.
     * @return EsResult wrapping a sequence of AliasInfo objects.
     */
-  def catAliases: EsResult[Seq[AliasInfo]] = {
-    catAliasIndexMap.map[Seq[AliasInfo]]((indexAliasMap: Map[String, Seq[AliasInfo]]) => indexAliasMap.values.flatten.toSeq)
+  def catAliases: EsResult[Seq[GenericAliasInfo]] = {
+    catAliasIndexMap.map[Seq[GenericAliasInfo]]((indexAliasMap: Map[String, Seq[GenericAliasInfo]]) => indexAliasMap.values.flatten.toSeq)
   }
 
   /**
     * Returns a map of Elasticsearch alias info.
     * @return EsResult wrapping a map of AliasInfo.
     */
-  def catAliasIndexMap: EsResult[Map[String, Seq[AliasInfo]]] = {
+  def catAliasIndexMap: EsResult[Map[String, Seq[GenericAliasInfo]]] = {
     val catAliasesForCluster = buildGetAliases(None)
     getAliases(catAliasesForCluster)
   }
@@ -77,9 +77,9 @@ trait EsAliases extends JestUtils {
     * @param index String index to get aliases for.
     * @return EsResult wrapping the aliases.
     */
-  def getAliasesByIndex(index: String): EsResult[Seq[AliasInfo]] = {
+  def getAliasesByIndex(index: String): EsResult[Seq[GenericAliasInfo]] = {
     val getAliasesByIndex = buildGetAliases(Some(index))
-    getAliases(getAliasesByIndex).map[Seq[AliasInfo]]((indexAliasMap: Map[String, Seq[AliasInfo]]) => indexAliasMap.values.flatten.toSeq)
+    getAliases(getAliasesByIndex).map[Seq[GenericAliasInfo]]((indexAliasMap: Map[String, Seq[GenericAliasInfo]]) => indexAliasMap.values.flatten.toSeq)
   }
 
   /**
@@ -87,9 +87,9 @@ trait EsAliases extends JestUtils {
     * @param aliasNames Sequence of ES alias names.
     * @return EsResult wrapping the aliases.
     */
-  def getAliasesByName(aliasNames: Seq[String]): EsResult[Seq[AliasInfo]] = {
+  def getAliasesByName(aliasNames: Seq[String]): EsResult[Seq[GenericAliasInfo]] = {
     val jestResult: JestResult = jest.execute(new GetAliasByNameBuilder(aliasNames).build())
-    parseJestResult(jestResult).map[Seq[AliasInfo]]((indexAliasMap: Map[String, Seq[AliasInfo]]) => indexAliasMap.values.flatten.toSeq)
+    parseJestResult(jestResult).map[Seq[GenericAliasInfo]]((indexAliasMap: Map[String, Seq[GenericAliasInfo]]) => indexAliasMap.values.flatten.toSeq)
   }
 
   /**
@@ -97,8 +97,8 @@ trait EsAliases extends JestUtils {
     * @param result JestResult result to parse.
     * @return EsResult wrapping map of alias info.
     */
-  private[esclient] def parseJestResult(result: JestResult): EsResult[Map[String, Seq[AliasInfo]]] = {
-    toEsResult[Map[String, ReturnedAliases]](result).map[Map[String, Seq[AliasInfo]]](
+  private[esclient] def parseJestResult(result: JestResult): EsResult[Map[String, Seq[GenericAliasInfo]]] = {
+    toEsResult[Map[String, ReturnedAliases]](result).map[Map[String, Seq[GenericAliasInfo]]](
       (esReturnedMap) => {
         esReturnedMap.map { case (index, returnedAlias) =>
           index ->
@@ -117,7 +117,7 @@ trait EsAliases extends JestUtils {
     * @return EsResult wrapping a map of alias info.
     */
   @VisibleForTesting
-  private[esclient] def getAliases(getAliases: GetAliases): EsResult[Map[String, Seq[AliasInfo]]] = {
+  private[esclient] def getAliases(getAliases: GetAliases): EsResult[Map[String, Seq[GenericAliasInfo]]] = {
     val jestResult: JestResult = jest.execute(getAliases)
     parseJestResult(jestResult)
   }
@@ -141,7 +141,7 @@ trait EsAliases extends JestUtils {
   * @param toAdd Sequence of aliases to add.
   * @param toRemove Sequence of aliases to remove.
   */
-class AliasBuilder(toAdd: Seq[AliasInfo], toRemove: Seq[AliasInfo]) extends AbstractMultiTypeActionBuilder[AliasAction, AliasBuilder] {
+class AliasBuilder(toAdd: Seq[GenericAliasInfo], toRemove: Seq[GenericAliasInfo]) extends AbstractMultiTypeActionBuilder[AliasAction, AliasBuilder] {
   val actions = Map(
     "actions" -> (
       toAdd.map { aliasInfo => Map("add" -> aliasInfo.toMap) } ++
@@ -177,6 +177,17 @@ case class ReturnedAliases(aliases: Map[String, RoutingInfo])
 case class RoutingInfo(indexRouting: Option[String], searchRouting: Option[String])
 
 /**
+  * Generic trait wrapping Elasticsearch alias information.
+  */
+trait GenericAliasInfo{
+  def index: String
+  def alias: String
+  def indexRouting: Option[String]
+  def searchRouting: Option[String]
+  def toMap: Map[String, Any]
+}
+
+/**
   * Case class wrapping Elasticsearch alias information.
   * @param index String index for the alias.
   * @param alias String alias name.
@@ -189,8 +200,10 @@ case class AliasInfo(
   alias: String,
   indexRouting: Option[String] = None,
   searchRouting: Option[String] = None
-){
+) extends GenericAliasInfo{
   lazy val toMap: Map[String, Any] = Map("index" -> index, "alias" -> alias) ++
     indexRouting.map { routingVal => Map("index_routing" -> routingVal) }.getOrElse(Map()) ++
     searchRouting.map { routingVal => Map("search_routing" -> routingVal) }.getOrElse(Map())
 }
+
+

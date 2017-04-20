@@ -49,7 +49,7 @@ trait EsQuery extends JestUtils {
     * @param id String id of document to get.
     * @return EsResult wrapping the response from ES.
     */
-  def get(index: String, id: String): EsResult[GetResponse] = {
+  def get(index: String, id: String): EsResult[GenericGetResponse] = {
     val jestResult = jest.execute(buildGetAction(index, id))
     handleJestResult(jestResult) { successfulJestResult =>
       JsonUtils.fromJson[GetResponse](successfulJestResult.getJsonString)
@@ -164,11 +164,12 @@ trait EsQuery extends JestUtils {
           index = if (h.has(EsClient._INDEX)) h.get(EsClient._INDEX).getAsString else "",
           typeName = if (h.has(EsClient._TYPE)) h.get(EsClient._TYPE).getAsString else "",
           id = h.get(EsClient._ID).getAsString,
-          score = if (h.has(EsClient._SCORE) && !h.get(EsClient._SCORE).isJsonNull)
-            Some(h.get(EsClient._SCORE).getAsDouble) else None,
+          score = if (h.has(EsClient._SCORE) && !h.get(EsClient._SCORE).isJsonNull) {
+            Some(h.get(EsClient._SCORE).getAsDouble)
+          } else { None },
           source = if (h.has(EsClient._SOURCE)) h.get(EsClient._SOURCE).toString else "", // getting all doc IDs does not give back any fields
           matchedFields = {
-            if (h.has(EsClient.MATCHED_QUERIES))
+            if (h.has(EsClient.MATCHED_QUERIES)) {
               Some(h.get(EsClient.MATCHED_QUERIES).getAsJsonArray.iterator().asScala.toSeq.map {
                 element =>
                   // remove the named query delimiter and everything after it, if it exists
@@ -176,15 +177,13 @@ trait EsQuery extends JestUtils {
                   val delimIndex = queryName.indexOf(EsNames.NAME_QUERY_DELIMITER)
                   if (delimIndex >= 0) queryName.substring(0, delimIndex) else queryName
               })
-            else
-              None
+            }
+            else { None }
           },
           explain = {
             if (h.has(EsClient._EXPLANATION)) {
               Some(h.get(EsClient._EXPLANATION).toString)
-            } else {
-              None
-            }
+            } else { None }
           }
         )
       })
@@ -328,6 +327,22 @@ case class SearchHit(
 )
 
 /**
+  * Generic trait for an Elasticsearch Get response.
+  */
+trait GenericGetResponse {
+  def index: String
+  def typeName: String
+  def id: String
+  def version: Int
+  def sourceJson: Option[JsonNode]
+  def sourceIn: Option[String]
+  def found: Boolean
+  def error: Option[String]
+  def source: Option[String]
+  def foundVersion: Option[Int]
+}
+
+/**
   * Case class for a Get response from Elasticsearch.
   * TODO: version needs to be an Option.  If a doc id is not found, version is missing from the get response.
   * Today, Jackson is giving us 0 for version when the doc is not found.
@@ -350,7 +365,7 @@ case class GetResponse(
   sourceIn: Option[String] = None,
   found: Boolean,
   error: Option[String] = None
-) {
+) extends GenericGetResponse {
   lazy val source: Option[String] = sourceJson.map(JsonUtils.toJson(_)).orElse(sourceIn) // convert json to string
   def foundVersion: Option[Int] = if (found) Some(version) else None
 }

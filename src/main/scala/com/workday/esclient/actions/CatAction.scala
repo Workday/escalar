@@ -137,6 +137,21 @@ case class NodeInfo(
 }
 
 /**
+  * Generic trait wrapping index information.
+  */
+trait GenericIndexInfo {
+  def health: String
+  def status: String
+  def index: String
+  def pri: Int
+  def rep: Int
+  def docCount: Int
+  def docsDeleted: Int
+  def storeSize: String
+  def priStoreSize: String
+}
+
+/**
   * Case class for Elasticsearch index information.
   * @param health String ES index health.
   * @param status String index status.
@@ -159,7 +174,7 @@ case class IndexInfo(
   @JsonProperty("docs.deleted") docsDeleted: Int,
   @JsonProperty("store.size") storeSize: String,
   @JsonProperty("pri.store.size") priStoreSize: String
-)
+) extends GenericIndexInfo
 
 /**
   * Node information object for data node string constant.

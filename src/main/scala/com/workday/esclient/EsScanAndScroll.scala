@@ -41,6 +41,9 @@ trait EsScanAndScroll extends JestUtils with EsQuery {
       case EsResponse(response) => EsResponse(EsSearchResponse(response.took, response.hits, response.aggregations))
       case e: EsError => e
       case e: EsInvalidResponse => e
+        //$COVERAGE-OFF$
+      case e: GenericEsError => e
+        //$COVERAGE-ON$
     }
   }
 
@@ -134,6 +137,7 @@ trait EsScanAndScroll extends JestUtils with EsQuery {
       case EsResponse(scanAndScrollResponse) => EsResponse(scanAndScrollResponse.hits)
       case e: EsError => e
       case e: EsInvalidResponse => e
+      case e: GenericEsError => e
     }
   }
 
@@ -160,6 +164,7 @@ trait EsScanAndScroll extends JestUtils with EsQuery {
         }
       case e: EsError => Iterator(e)
       case e: EsInvalidResponse => Iterator(e)
+      case e: GenericEsError => Iterator(e)
     }
   }
 

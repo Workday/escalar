@@ -1,3 +1,4 @@
+//scalastyle:off
 package com.workday.esclient.unit
 
 import com.google.gson.{Gson, JsonObject, JsonParser}
@@ -9,6 +10,9 @@ import io.searchbox.params.Parameters
 import org.mockito.Mockito.when
 
 class EsScanAndScrollSpec extends EsClientSpec {
+  case class NewEsError(error: String, status: Int) extends GenericEsError {
+    def get: Nothing = throw new NoSuchElementException(error + ", status " + status)
+  }
 
   val emptyAggregation = new JsonObject()
   val noResultResponse = EsSearchResponse(0, SearchHits(0, None, Nil), emptyAggregation)
@@ -295,6 +299,7 @@ class EsScanAndScrollSpec extends EsClientSpec {
     val esClient = new EsClientWithMockedEs()
     esClient.getScrolledSearchHitsIterator(EsError("error", 1)).toSeq shouldEqual Seq(EsError("error", 1))
     esClient.getScrolledSearchHitsIterator(EsInvalidResponse("error")).toSeq shouldEqual Seq(EsInvalidResponse("error"))
+    esClient.getScrolledSearchHitsIterator(NewEsError("error", 1)).toSeq shouldEqual Seq(NewEsError("error", 1))
   }
 
   behavior of "#getScrolledSearchIterator"
@@ -302,6 +307,7 @@ class EsScanAndScrollSpec extends EsClientSpec {
     val esClient = new EsClientWithMockedEs()
     esClient.getScrolledSearchIterator(EsError("error", 1)).toSeq shouldEqual Seq(EsError("error", 1))
     esClient.getScrolledSearchIterator(EsInvalidResponse("error")).toSeq shouldEqual Seq(EsInvalidResponse("error"))
+    esClient.getScrolledSearchIterator(NewEsError("error", 1)).toSeq shouldEqual Seq(NewEsError("error", 1))
   }
 
   behavior of "#buildScrolledSearchAction"
@@ -328,3 +334,4 @@ class EsScanAndScrollSpec extends EsClientSpec {
     searchWithParams.getParameter("fields").contains(Seq("1$2")) shouldEqual true
   }
 }
+//scalastyle:on
