@@ -1,12 +1,19 @@
+/*
+ * Copyright 2017 Workday, Inc.
+ *
+ * This software is available under the MIT license.
+ * Please see the LICENSE.txt file in this project.
+ */
+
 package com.workday.esclient.unit
 
 import com.workday.esclient.{EsQueryHelpers, gt, gte, lt, lte}
 
+// scalastyle:off magic.number
 class EsQueryHelpersSpec extends org.scalatest.FlatSpec with org.scalatest.Matchers with org.scalatest.BeforeAndAfterAll
   with org.scalatest.BeforeAndAfterEach with org.scalatest.mock.MockitoSugar  {
   private val testField = "test"
-  private val testParam = "test_param"
-  private val prefixOption = ("type" -> "phrase_prefix")
+  private val prefixOption = "type" -> "phrase_prefix"
   "#setOption" should "convert a Sequence of Options to a Option of Sequence" in {
     EsQueryHelpers.seqOption(Some("qwe"), None, Some(1), Some(22), None) shouldBe Some(Seq("qwe", 1, 22))
   }
@@ -36,11 +43,8 @@ class EsQueryHelpersSpec extends org.scalatest.FlatSpec with org.scalatest.Match
   }
 
   "#terms" should "return Some map with proper values with options" in {
-    EsQueryHelpers.terms(testField, Seq(123, "222", 11), Map("option" -> "optionValue")) shouldBe Some(Map("terms" -> Map(testField -> Seq(123, "222", 11), "option" -> "optionValue")))
-  }
-
-  "#range" should "return Some map with proper values with appropriate range terms" in {
-    EsQueryHelpers.range(testField, Map("range1" -> 1, "range2" -> 2)) shouldBe Some(Map("range" -> Map(testField -> Map("range1" -> 1, "range2" -> 2))))
+    EsQueryHelpers.terms(testField, Seq(123, "222", 11), Map("option" -> "optionValue")) shouldBe
+      Some(Map("terms" -> Map(testField -> Seq(123, "222", 11), "option" -> "optionValue")))
   }
 
   "#termsFromLookup" should "return Some map with lookup values" in {
@@ -98,8 +102,8 @@ class EsQueryHelpersSpec extends org.scalatest.FlatSpec with org.scalatest.Match
   }
 
   "#matchPhrasePrefixQuery" should "return Some map with otherOptions" in {
-    EsQueryHelpers.matchPhrasePrefixQuery(testField, "abc", "operator" -> "and", "operator2" -> "and2") shouldBe Some(Map("match" -> Map(testField -> Map("query" ->
-      "abc", "operator" -> "and", "operator2" -> "and2", prefixOption))))
+    EsQueryHelpers.matchPhrasePrefixQuery(testField, "abc", "operator" -> "and", "operator2" -> "and2") shouldBe
+      Some(Map("match" -> Map(testField -> Map("query" -> "abc", "operator" -> "and", "operator2" -> "and2", prefixOption))))
   }
 
   "#queryString" should "return Some map with query and no option" in {
@@ -306,7 +310,7 @@ class EsQueryHelpersSpec extends org.scalatest.FlatSpec with org.scalatest.Match
   behavior of "range"
 
   it should "have lower and upper bound" in {
-    EsQueryHelpers.range("field", Some(5), gte, Some(10), lt) shouldBe
+    EsQueryHelpers.range("field", (gte, 5.0), Some(lt, 10.0)) shouldBe
       Some(
         Map("range" ->
           Map("field" ->
@@ -318,41 +322,23 @@ class EsQueryHelpersSpec extends org.scalatest.FlatSpec with org.scalatest.Match
   }
 
   it should "have only a lower bound" in {
-    EsQueryHelpers.range("field", Some(5), gte, None, lt) shouldBe
+    EsQueryHelpers.range("field", (lte, 5)) shouldBe
       Some(
         Map("range" ->
           Map("field" ->
-            Map("gte" -> 5.0)
+            Map("lte" -> 5)
           )
         )
       )
   }
 
-  it should "have only an upper bound" in {
-    EsQueryHelpers.range("field", None, gte, Some(10), lt) shouldBe
+  it should "return the appropriate range value type" in {
+    EsQueryHelpers.range(testField, (gt, 1L), Some(lt, 2L)) shouldBe
       Some(
         Map("range" ->
-          Map("field" ->
-            Map("lt" -> 10.0)
-          )
-        )
-      )
-  }
-
-  it should "have inclusive lower and exclusive upper bound" in {
-    EsQueryHelpers.range("field", Some(20), gt, Some(30), lte) shouldBe
-      Some(
-        Map("range" ->
-          Map("field" ->
-          Map("gt" -> 20,
-             "lte" -> 30)
-          )
-        )
-      )
-  }
-
-  it should " be empty" in {
-    EsQueryHelpers.range("field", None, gte, None, lt) shouldBe None
+          Map(testField ->
+            Map("gt" -> 1L,
+              "lt" -> 2L))))
   }
 
   "#exists" should "create an exists filter" in {
