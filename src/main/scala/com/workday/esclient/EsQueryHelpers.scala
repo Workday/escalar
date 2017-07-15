@@ -420,6 +420,25 @@ object EsQueryHelpers {
       ).flatten.toMap
     ))
   }
+
+  /**
+    * Returns a map for making Range Elasticsearch queries.
+    * @param fieldName String field name to query on.
+    * @param lowerBound Double value for lower bound of range.
+    * @param lowerBoundOp Comparison op for lower bound.
+    * @param upperBound Double value for upper bound of range.
+    * @param upperBoundOp Comparison op for upper bound.
+    * @return Combined map for making Range queries.
+    */
+  def range(fieldName: String, lowerBound: Option[Double], lowerBoundOp: ComparisonOp,
+            upperBound: Option[Double], upperBoundOp: ComparisonOp): Option[Map[String, Any]] = {
+    val range = Seq(lowerBound.map(lowerBoundOp.op -> _), upperBound.map(upperBoundOp.op -> _)).flatten.toMap
+    if (range.isEmpty) None else Some(Map("range" -> Map(fieldName -> range)))
+  }
+
+  def exists(fieldName: String): Option[Map[String, Any]] = Some(Map("exists" -> Map("field" -> fieldName)))
+
+  def missing(fieldName: String): Option[Map[String, Any]] = Some(Map("missing" -> Map("field" -> fieldName)))
 }
 
 // scalastyle:on

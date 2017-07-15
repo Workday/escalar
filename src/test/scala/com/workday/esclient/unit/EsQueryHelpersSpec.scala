@@ -340,4 +340,12 @@ class EsQueryHelpersSpec extends org.scalatest.FlatSpec with org.scalatest.Match
             Map("gt" -> 1L,
               "lt" -> 2L))))
   }
+
+  "#exists" should "create an exists filter" in {
+    EsQueryHelpers.exists("field1") shouldBe Some(Map("exists" -> Map("field" -> "field1")))
+  }
+
+  "#missing" should "create a missing filter" in {
+    EsQueryHelpers.missing("field1") shouldBe Some(Map("missing" -> Map("field" -> "field1")))
+  }
 }
