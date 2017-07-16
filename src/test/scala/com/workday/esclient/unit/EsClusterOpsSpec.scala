@@ -56,7 +56,7 @@ class EsClusterOpsSpec extends EsClientSpec {
     val response = RerouteAcknowledgment("true")
 
     val esClient = new EsClientWithMockedEs(mockJestClient).whenAny(JsonUtils.toJson(response))
-    esClient.allocateShards(Nil).get shouldEqual response
+    esClient.allocateShards(Nil, retryFailed = false).get shouldEqual response
     verify(mockJestClient).execute(any(classOf[Reroute]))
   }
 

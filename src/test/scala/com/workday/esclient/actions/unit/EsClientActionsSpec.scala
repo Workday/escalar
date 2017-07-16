@@ -138,12 +138,12 @@ class EsClientActionsSpec extends org.scalatest.FlatSpec with org.scalatest.Matc
 
   behavior of "#Reroute"
   it should "have a REST method type of POST" in {
-    val reroute: Reroute = new RerouteBuilder(Seq()).build
+    val reroute: Reroute = new RerouteBuilder(Seq(), retryFailed = false).build
     reroute.getRestMethodName shouldEqual "POST"
   }
 
   it should "have getData return an empty commands list if the payload is null" in {
-    val reroute: Reroute = new RerouteBuilder(Seq()).build
+    val reroute: Reroute = new RerouteBuilder(Seq(), retryFailed = false).build
     reroute.getData(null) shouldEqual JsonUtils.toJson(Map("commands" -> Seq()))
   }
 
@@ -153,7 +153,7 @@ class EsClientActionsSpec extends org.scalatest.FlatSpec with org.scalatest.Matc
     val rerouteAllocate1 = RerouteAllocate(indexName, 0, "Iron Man")
     val rerouteAllocate2 = RerouteAllocate(indexName, 1, "Iron Man")
     val reallocateSeq = Seq(rerouteAllocate1, rerouteAllocate2)
-    val reroute: Reroute = new RerouteBuilder(reallocateSeq).build
+    val reroute: Reroute = new RerouteBuilder(reallocateSeq, retryFailed = false).build
 
     val result = Map("commands" -> Seq(
       Map("allocate" ->
@@ -177,7 +177,7 @@ class EsClientActionsSpec extends org.scalatest.FlatSpec with org.scalatest.Matc
     val rerouteAllocate = RerouteAllocate("index", 0, "node")
     val expectedResult = Map("allocate" ->
       Map("index" -> "index", "shard" -> 0,
-        "node" -> "node", "allow_primary" -> "true")
+        "node" -> "node", "allow_pri mary" -> "true")
     )
 
     rerouteAllocate.toMap shouldEqual expectedResult
