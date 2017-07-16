@@ -18,7 +18,7 @@ import io.searchbox.action.{AbstractMultiTypeActionBuilder, GenericResultAbstrac
   *  Enables movement / reassignment of index shards.
   *  See for more info: https://www.elastic.co/guide/en/elasticsearch/reference/current/cluster-reroute.html
   */
-class Reroute(builder: RerouteBuilder) extends GenericResultAbstractAction(builder) {
+class Reroute(builder: RerouteBuilder, retryFailed: Boolean) extends GenericResultAbstractAction(builder) {
   this.payload = builder.source
   setURI(buildURI)
 
@@ -32,7 +32,7 @@ class Reroute(builder: RerouteBuilder) extends GenericResultAbstractAction(build
      * Builds the URI for hitting the Reroute API.
      * @return String URI.
      */
-  protected override def buildURI: String = s"_cluster/reroute"
+  protected override def buildURI: String = s"_cluster/reroute?retry_failed=$retryFailed"
 
    /**
      * Gets data for the Reroute action.
@@ -48,7 +48,7 @@ class Reroute(builder: RerouteBuilder) extends GenericResultAbstractAction(build
   * Builder class for [[com.workday.esclient.actions.Reroute]].
   * @param rerouteOps Sequence of [[com.workday.esclient.actions.RerouteOp]].
   */
-class RerouteBuilder(rerouteOps: Seq[RerouteOp]) extends AbstractMultiTypeActionBuilder[Reroute, RerouteBuilder]{
+class RerouteBuilder(rerouteOps: Seq[RerouteOp], retryFailed: Boolean) extends AbstractMultiTypeActionBuilder[Reroute, RerouteBuilder]{
   setHeader("content-type", "application/json")
 
   val source: Map[String, Any] = Map("commands" -> rerouteOps.map(_.toMap))
@@ -57,7 +57,7 @@ class RerouteBuilder(rerouteOps: Seq[RerouteOp]) extends AbstractMultiTypeAction
     * Builds [[com.workday.esclient.actions.Reroute]].
     * @return [[com.workday.esclient.actions.Reroute]].
     */
-  override def build: Reroute = new Reroute(this)
+  override def build: Reroute = new Reroute(this, retryFailed)
 }
 
 /**
@@ -72,13 +72,14 @@ trait RerouteOp {
   * @param index String ES index name.
   * @param shard Int shard number.
   * @param toNode String destination node.
-  * @param allowPrimary Boolean whether to allow reroute to primary node. Defaults to true.
+  * @param forcePrimary String whether to allow reroute empty shard, stale shard, or just a regular unassigned
+  *                     replica shard. Defaults to true.
   */
 case class RerouteAllocate(
   index: String,
   shard: Int,
   toNode: String,
-  allowPrimary: Boolean = true
+  forcePrimary: String = ""
 ) extends RerouteOp {
 
   /**
@@ -86,10 +87,14 @@ case class RerouteAllocate(
     * @return Map for allocate action.
     */
   override def toMap: Map[String, Any] =
-    Map("allocate" ->
-      Map("index" -> index, "shard" -> shard,
-        "node" -> toNode, "allow_primary" -> s"$allowPrimary")
-    )
+    forcePrimary match {
+      case "stale_primary" | "empty_primary" => Map(s"allocate_$forcePrimary" ->
+        Map("index" -> index, "shard" -> shard, "node" -> toNode, "accept_data_loss" -> true)
+      )
+      case _ => Map("allocate_replica" ->
+        Map("index" -> index, "shard" -> shard, "node" -> toNode)
+      )
+    }
 }
 
 /**
@@ -115,6 +120,30 @@ case class RerouteMove(
       Map("index" -> index, "shard" -> shard,
         "from_node" -> fromNode, "to_node" -> toNode)
     )
+}
+
+/**
+  * Case class for a Move Reroute operation.
+  * @param index String ES index name.
+  * @param shard Int shard number.
+  * @param node String node.
+  */
+case class RerouteCancel(
+  index: String,
+  shard: Int,
+  node: String,
+  allowPrimary: Boolean = false
+) extends RerouteOp {
+
+  /**
+    * Returns Reroute operation information as a map.
+    * @return Map for a move action.
+    */
+  override def toMap: Map[String, Any] =
+      Map("cancel" ->
+        Map("index" -> index, "shard" -> shard,
+          "node" -> node, "allow_primary" -> allowPrimary)
+      )
 }
 
 /**

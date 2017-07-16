@@ -138,12 +138,12 @@ class EsClientActionsSpec extends org.scalatest.FlatSpec with org.scalatest.Matc
 
   behavior of "#Reroute"
   it should "have a REST method type of POST" in {
-    val reroute: Reroute = new RerouteBuilder(Seq()).build
+    val reroute: Reroute = new RerouteBuilder(Seq(), retryFailed = false).build
     reroute.getRestMethodName shouldEqual "POST"
   }
 
   it should "have getData return an empty commands list if the payload is null" in {
-    val reroute: Reroute = new RerouteBuilder(Seq()).build
+    val reroute: Reroute = new RerouteBuilder(Seq(), retryFailed = false).build
     reroute.getData(null) shouldEqual JsonUtils.toJson(Map("commands" -> Seq()))
   }
 
@@ -153,21 +153,72 @@ class EsClientActionsSpec extends org.scalatest.FlatSpec with org.scalatest.Matc
     val rerouteAllocate1 = RerouteAllocate(indexName, 0, "Iron Man")
     val rerouteAllocate2 = RerouteAllocate(indexName, 1, "Iron Man")
     val reallocateSeq = Seq(rerouteAllocate1, rerouteAllocate2)
-    val reroute: Reroute = new RerouteBuilder(reallocateSeq).build
+    val reroute: Reroute = new RerouteBuilder(reallocateSeq, retryFailed = false).build
 
     val result = Map("commands" -> Seq(
-      Map("allocate" ->
+      Map("allocate_replica" ->
         Map("index" -> indexName,
             "shard" -> 0,
-            "node" -> destNodeName,
-            "allow_primary" -> "true")
+            "node" -> destNodeName)
       ),
-      Map("allocate" ->
+      Map("allocate_replica" ->
         Map("index" -> indexName,
              "shard" -> 1,
-             "node" -> destNodeName,
-             "allow_primary" -> "true"))
+             "node" -> destNodeName)
       )
+      )
+    )
+    reroute.getData(null) shouldEqual JsonUtils.toJson(result)
+  }
+
+  it should "have getData return commands List for shards reallocation on to stale copy in node if the payload for shards and destination nodes is provided" in {
+    val indexName = "index1"
+    val destNodeName = "Iron Man"
+    val rerouteAllocate1 = RerouteAllocate(indexName, 0, "Iron Man", "stale_primary")
+    val rerouteAllocate2 = RerouteAllocate(indexName, 1, "Iron Man", "stale_primary")
+    val reallocateSeq = Seq(rerouteAllocate1, rerouteAllocate2)
+    val reroute: Reroute = new RerouteBuilder(reallocateSeq, retryFailed = false).build
+
+    val result = Map("commands" -> Seq(
+      Map("allocate_stale_primary" ->
+        Map("index" -> indexName,
+          "shard" -> 0,
+          "node" -> destNodeName,
+          "accept_data_loss" -> true)
+      ),
+      Map("allocate_stale_primary" ->
+        Map("index" -> indexName,
+          "shard" -> 1,
+          "node" -> destNodeName,
+          "accept_data_loss" -> true)
+      )
+    )
+    )
+    reroute.getData(null) shouldEqual JsonUtils.toJson(result)
+  }
+
+  it should "have getData return commands List for shards empty reallocation on to node if the payload for shards and destination nodes is provided" in {
+    val indexName = "index1"
+    val destNodeName = "Iron Man"
+    val rerouteAllocate1 = RerouteAllocate(indexName, 0, "Iron Man", "empty_primary")
+    val rerouteAllocate2 = RerouteAllocate(indexName, 1, "Iron Man", "empty_primary")
+    val reallocateSeq = Seq(rerouteAllocate1, rerouteAllocate2)
+    val reroute: Reroute = new RerouteBuilder(reallocateSeq, retryFailed = false).build
+
+    val result = Map("commands" -> Seq(
+      Map("allocate_empty_primary" ->
+        Map("index" -> indexName,
+          "shard" -> 0,
+          "node" -> destNodeName,
+          "accept_data_loss" -> true)
+      ),
+      Map("allocate_empty_primary" ->
+        Map("index" -> indexName,
+          "shard" -> 1,
+          "node" -> destNodeName,
+          "accept_data_loss" -> true)
+      )
+    )
     )
     reroute.getData(null) shouldEqual JsonUtils.toJson(result)
   }
@@ -175,9 +226,29 @@ class EsClientActionsSpec extends org.scalatest.FlatSpec with org.scalatest.Matc
   behavior of "#RerouteAllocate"
   it should "create a Map from the case class" in {
     val rerouteAllocate = RerouteAllocate("index", 0, "node")
-    val expectedResult = Map("allocate" ->
+    val expectedResult = Map("allocate_replica" ->
       Map("index" -> "index", "shard" -> 0,
-        "node" -> "node", "allow_primary" -> "true")
+        "node" -> "node")
+    )
+
+    rerouteAllocate.toMap shouldEqual expectedResult
+  }
+
+  it should "create a Map from the case class stale copy shard" in {
+    val rerouteAllocate = RerouteAllocate("index", 0, "node", "stale_primary")
+    val expectedResult = Map("allocate_stale_primary" ->
+      Map("index" -> "index", "shard" -> 0,
+        "node" -> "node", "accept_data_loss" -> true)
+    )
+
+    rerouteAllocate.toMap shouldEqual expectedResult
+  }
+
+  it should "create a Map from the case class empty copy shard" in {
+    val rerouteAllocate = RerouteAllocate("index", 0, "node", "empty_primary")
+    val expectedResult = Map("allocate_empty_primary" ->
+      Map("index" -> "index", "shard" -> 0,
+        "node" -> "node", "accept_data_loss"-> true)
     )
 
     rerouteAllocate.toMap shouldEqual expectedResult
@@ -192,6 +263,17 @@ class EsClientActionsSpec extends org.scalatest.FlatSpec with org.scalatest.Matc
     )
 
     rerouteMove.toMap shouldEqual expectedResult
+  }
+
+  behavior of "#RerouteCancel"
+  it should "create a Map from the case class" in {
+    val rerouteCancel = RerouteCancel("index", 0, "node0")
+    val expectedResult = Map("cancel" ->
+      Map("index" -> "index", "shard" -> 0,
+        "node" -> "node0", "allow_primary" -> false)
+    )
+
+    rerouteCancel.toMap shouldEqual expectedResult
   }
 
   behavior of "#SnapshotCreateAction"

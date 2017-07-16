@@ -63,8 +63,8 @@ trait EsClusterOps extends JestUtils {
     * @param shardAllocation Sequence of RerouteOps containing shard name and destination node.
     * @return EsResult of acknowledgment from ES.
     */
-  def allocateShards(shardAllocation: Seq[RerouteOp]): EsResult[RerouteAcknowledgment] = {
-    val jestResult = jest.execute(new RerouteBuilder(shardAllocation).build)
+  def allocateShards(shardAllocation: Seq[RerouteOp], retryFailed: Boolean): EsResult[RerouteAcknowledgment] = {
+    val jestResult = jest.execute(new RerouteBuilder(shardAllocation, retryFailed).build)
     toEsResult[RerouteAcknowledgment](jestResult)
   }
 
