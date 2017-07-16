@@ -265,6 +265,17 @@ class EsClientActionsSpec extends org.scalatest.FlatSpec with org.scalatest.Matc
     rerouteMove.toMap shouldEqual expectedResult
   }
 
+  behavior of "#RerouteCancel"
+  it should "create a Map from the case class" in {
+    val rerouteCancel = RerouteCancel("index", 0, "node0")
+    val expectedResult = Map("cancel" ->
+      Map("index" -> "index", "shard" -> 0,
+        "node" -> "node0", "allow_primary" -> false)
+    )
+
+    rerouteCancel.toMap shouldEqual expectedResult
+  }
+
   behavior of "#SnapshotCreateAction"
   it should "have a REST method type of PUT" in {
     val action: SnapshotCreateAction = new SnapshotCreateBuilder("", "", Nil).build
